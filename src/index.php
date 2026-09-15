@@ -40,13 +40,13 @@ $query = "SELECT c.id as cliente_id, c.nome as cliente_nome, c.telefone, p.nome 
           LEFT JOIN pets p ON c.id = p.cliente_id";
 
 if ($busca) {
-    $query .= " WHERE c.nome LIKE :busca OR p.nome LIKE :busca";
+    $query .= " WHERE c.nome LIKE :busca1 OR p.nome LIKE :busca2";
 }
 $query .= " ORDER BY c.data_cadastro DESC";
 
 $stmt_listagem = $pdo->prepare($query);
 if ($busca) {
-    $stmt_listagem->execute(['busca' => "%$busca%"]);
+    $stmt_listagem->execute(['busca1' => "%$busca%", 'busca2' => "%$busca%"]);
 } else {
     $stmt_listagem->execute();
 }
