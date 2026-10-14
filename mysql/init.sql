@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS pets (
     nome VARCHAR(100) NOT NULL,
     especie VARCHAR(50) NOT NULL,
     raca VARCHAR(50),
+    idade VARCHAR(50),
+    foto VARCHAR(255),
+    observacoes TEXT,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
 );
