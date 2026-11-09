@@ -25,6 +25,26 @@ function processarUploadFoto($fileInputName) {
     return null;
 }
 
+// Helper para exibição segura e consistente de ícones de serviços
+function resolverIconeServico($icone, $nomeServico = '') {
+    $icone = trim((string)($icone ?? ''));
+    // Se for um caractere/emoji válido e não tiver sido corrompido por mojibake (como ð, Ÿ, â)
+    if ($icone !== '' && mb_check_encoding($icone, 'UTF-8') && !preg_match('/[Ãðâ]/', $icone)) {
+        return $icone;
+    }
+    $nomeLower = mb_strtolower((string)$nomeServico);
+    if (str_contains($nomeLower, 'banho') && str_contains($nomeLower, 'tosa')) return '🧼';
+    if (str_contains($nomeLower, 'banho')) return '🛁';
+    if (str_contains($nomeLower, 'tosa')) return '✂️';
+    if (str_contains($nomeLower, 'consulta') || str_contains($nomeLower, 'veterin')) return '🩺';
+    if (str_contains($nomeLower, 'vacin')) return '💉';
+    if (str_contains($nomeLower, 'hidrata')) return '✨';
+    if (str_contains($nomeLower, 'unha') || str_contains($nomeLower, 'auricular') || str_contains($nomeLower, 'ouvido')) return '🐾';
+    if (str_contains($nomeLower, 'táxi') || str_contains($nomeLower, 'taxi') || str_contains($nomeLower, 'transporte')) return '🚗';
+    if (str_contains($nomeLower, 'hotel') || str_contains($nomeLower, 'adestram')) return '🦴';
+    return '🐾';
+}
+
 // ==========================================
 // 1. LÓGICA DE CADASTRO (INSERT)
 // ==========================================
@@ -700,16 +720,7 @@ foreach ($agendamentos as $ag) {
                                                 $petIconDefault = str_contains(strtolower($ag['especie']), 'gato') ? '🐱' : '🐶';
                                                 
                                                 // Ícone do serviço
-                                                $sIcone = !empty($ag['servico_icone']) ? $ag['servico_icone'] : '🐾';
-                                                if ($sIcone === '🐾') {
-                                                    $sLow = strtolower($ag['servico']);
-                                                    if (str_contains($sLow, 'banho') && str_contains($sLow, 'tosa')) $sIcone = '🧼';
-                                                    elseif (str_contains($sLow, 'banho')) $sIcone = '🛁';
-                                                    elseif (str_contains($sLow, 'tosa')) $sIcone = '✂️';
-                                                    elseif (str_contains($sLow, 'consulta')) $sIcone = '🩺';
-                                                    elseif (str_contains($sLow, 'vacin')) $sIcone = '💉';
-                                                    elseif (str_contains($sLow, 'hidrat')) $sIcone = '✨';
-                                                }
+                                                $sIcone = resolverIconeServico($ag['servico_icone'] ?? '', $ag['servico'] ?? '');
 
                                                 // JSON para o PopUp
                                                 $jsonAgData = htmlspecialchars(json_encode([
@@ -827,7 +838,7 @@ foreach ($agendamentos as $ag) {
                                             $valorFormatado = 'R$ ' . number_format($ag['valor'], 2, ',', '.');
                                             $petFotoSrc = !empty($ag['pet_foto']) && file_exists(__DIR__ . '/' . $ag['pet_foto']) ? $ag['pet_foto'] : null;
                                             $petIconDefault = str_contains(strtolower($ag['especie']), 'gato') ? '🐱' : '🐶';
-                                            $sIcone = !empty($ag['servico_icone']) ? $ag['servico_icone'] : '🐾';
+                                            $sIcone = resolverIconeServico($ag['servico_icone'] ?? '', $ag['servico'] ?? '');
 
                                             $jsonAgData = htmlspecialchars(json_encode([
                                                 'id' => $ag['id'],
@@ -1001,7 +1012,7 @@ foreach ($agendamentos as $ag) {
                                     <div class="service-item-card">
                                         <div class="service-card-top">
                                             <div class="service-item-header">
-                                                <div class="service-item-icon"><?= $s['icone'] ?></div>
+                                                <div class="service-item-icon"><?= resolverIconeServico($s['icone'] ?? '', $s['nome'] ?? '') ?></div>
                                                 <span class="service-duration-badge">⏱️ <?= $s['duracao_minutos'] ?> min</span>
                                             </div>
                                             <h4 class="service-item-name"><?= htmlspecialchars($s['nome']) ?></h4>
@@ -1320,7 +1331,7 @@ foreach ($agendamentos as $ag) {
                                 <option value="">-- Selecione o Serviço --</option>
                                 <?php foreach ($lista_servicos as $s): ?>
                                     <option value="<?= $s['id'] ?>" data-preco="<?= $s['preco'] ?>" data-nome="<?= htmlspecialchars($s['nome']) ?>">
-                                        <?= $s['icone'] ?> <?= htmlspecialchars($s['nome']) ?> — R$ <?= number_format($s['preco'], 2, ',', '.') ?> (<?= $s['duracao_minutos'] ?>m)
+                                        <?= resolverIconeServico($s['icone'] ?? '', $s['nome'] ?? '') ?> <?= htmlspecialchars($s['nome']) ?> — R$ <?= number_format($s['preco'], 2, ',', '.') ?> (<?= $s['duracao_minutos'] ?>m)
                                     </option>
                                 <?php endforeach; ?>
                             </select>

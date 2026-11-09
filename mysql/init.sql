@@ -1,4 +1,7 @@
-CREATE DATABASE IF NOT EXISTS petshop;
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
+CREATE DATABASE IF NOT EXISTS petshop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE petshop;
 
 CREATE TABLE IF NOT EXISTS clientes (
@@ -7,7 +10,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     telefone VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS pets (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,7 +23,7 @@ CREATE TABLE IF NOT EXISTS pets (
     observacoes TEXT,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS servicos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,7 +33,7 @@ CREATE TABLE IF NOT EXISTS servicos (
     icone VARCHAR(50) DEFAULT '🐾',
     duracao_minutos INT DEFAULT 30,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO servicos (nome, preco, descricao, icone, duracao_minutos) VALUES
 ('Banho', 60.00, 'Banho completo com água morna, produtos específicos e secagem', '🛁', 40),
@@ -53,4 +56,4 @@ CREATE TABLE IF NOT EXISTS agendamentos (
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE,
     FOREIGN KEY (servico_id) REFERENCES servicos(id) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
