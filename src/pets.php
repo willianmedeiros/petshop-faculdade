@@ -471,9 +471,9 @@ include __DIR__ . '/includes/header.php';
                         </div>
                     </div>
 
-                    <div class="modal-footer" style="padding: 0; border: none;">
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="alternarModoEdicao(false)">Cancelar</button>
-                        <button type="submit" class="btn btn-primary btn-sm">💾 Salvar Alterações</button>
+                    <div class="modal-footer-edit" style="position: sticky; bottom: -1.6rem; background: #ffffff; padding: 1rem 0 0.5rem; margin-top: 1.2rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.8rem; z-index: 10;">
+                        <button type="button" class="btn btn-secondary" onclick="alternarModoEdicao(false)">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
                     </div>
                 </form>
             </div>

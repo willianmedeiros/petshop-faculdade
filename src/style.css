@@ -883,15 +883,17 @@ textarea.form-control {
 
 .modal-card {
     background: var(--surface);
-    border-radius: 22px;
+    border-radius: 20px;
     max-width: 680px;
     width: 100%;
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-modal);
     transform: scale(0.92) translateY(20px);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
+    overflow: hidden;
 }
 
 .modal-overlay.active .modal-card {
@@ -899,11 +901,14 @@ textarea.form-control {
 }
 
 .modal-header {
-    padding: 1.5rem 1.8rem;
+    padding: 1.25rem 1.6rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+    background: #ffffff;
+    z-index: 2;
 }
 
 .modal-title {
@@ -936,7 +941,10 @@ textarea.form-control {
 }
 
 .modal-body {
-    padding: 1.8rem;
+    padding: 1.5rem 1.6rem;
+    overflow-y: auto;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Modal de Detalhes do Pet & Tutor */
@@ -945,7 +953,6 @@ textarea.form-control {
     border-radius: 18px;
     background: #ffffff;
     box-shadow: 0 25px 50px -12px rgba(11, 31, 51, 0.35);
-    overflow: hidden;
 }
 
 .pet-hero-banner {
@@ -2091,6 +2098,9 @@ textarea.form-control {
     flex-direction: column;
     gap: 0.4rem;
     min-height: 38px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
 }
 
 .obs-list-item-tag {
