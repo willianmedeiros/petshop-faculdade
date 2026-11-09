@@ -2,6 +2,7 @@
 require_once 'db.php';
 
 $mensagem = '';
+$toast_notificacao = null;
 $active_tab = $_GET['tab'] ?? 'pets'; // Padrão: Pets e Tutores
 
 // Processamento de Upload de Foto Helper
@@ -144,10 +145,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $stmt_serv = $pdo->prepare("INSERT INTO servicos (nome, preco, descricao, icone, duracao_minutos) VALUES (?, ?, ?, ?, ?)");
             $stmt_serv->execute([$nome, $preco, $descricao, $icone, $duracao]);
-            $mensagem = "<div class='alert alert-success'><span>✨</span> <strong>Serviço Cadastrado!</strong> O serviço '<strong>" . htmlspecialchars($nome) . "</strong>' foi adicionado com sucesso!</div>";
+            $toast_notificacao = ['msg' => 'Serviço <strong>' . htmlspecialchars($nome) . '</strong> adicionado ao catálogo!', 'tipo' => 'success', 'icone' => '✨'];
             $active_tab = 'servicos';
         } catch (Exception $e) {
             $mensagem = "<div class='alert alert-error'><span>⚠️</span> <strong>Erro ao cadastrar serviço:</strong> " . htmlspecialchars($e->getMessage()) . "</div>";
+            $active_tab = 'servicos';
+        }
+    } else {
+        $mensagem = "<div class='alert alert-error'><span>⚠️</span> <strong>Atenção:</strong> Informe o nome e valor do serviço.</div>";
+        $active_tab = 'servicos';
+    }
+}
+
+// Edição / Atualização de Serviço no Catálogo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'atualizar_servico') {
+    $servico_id = (int)($_POST['servico_id'] ?? 0);
+    $nome = trim($_POST['nome_servico'] ?? '');
+    $preco = floatval(str_replace(',', '.', $_POST['preco_servico'] ?? '0.00'));
+    $descricao = trim($_POST['descricao_servico'] ?? '');
+    $icone = trim($_POST['icone_servico'] ?? '🐾');
+    $duracao = (int)($_POST['duracao_minutos'] ?? 30);
+
+    if ($servico_id > 0 && !empty($nome) && $preco >= 0) {
+        try {
+            $stmt_up_serv = $pdo->prepare("UPDATE servicos SET nome = ?, preco = ?, descricao = ?, icone = ?, duracao_minutos = ? WHERE id = ?");
+            $stmt_up_serv->execute([$nome, $preco, $descricao, $icone, $duracao, $servico_id]);
+            $toast_notificacao = ['msg' => 'Serviço <strong>' . htmlspecialchars($nome) . '</strong> atualizado com sucesso!', 'tipo' => 'success', 'icone' => '✏️'];
+            $active_tab = 'servicos';
+        } catch (Exception $e) {
+            $mensagem = "<div class='alert alert-error'><span>⚠️</span> <strong>Erro ao atualizar serviço:</strong> " . htmlspecialchars($e->getMessage()) . "</div>";
             $active_tab = 'servicos';
         }
     } else {
@@ -161,27 +187,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $pet_id = (int)($_POST['pet_id'] ?? 0);
     $servico_id = !empty($_POST['servico_id']) ? (int)$_POST['servico_id'] : null;
     $servico = trim($_POST['servico'] ?? '');
+    $valor = 0.00;
 
-    // Se selecionou pelo ID do serviço, busca o nome correspondente
+    // O valor do serviço fica obrigatoriamente atrelado ao serviço cadastrado
     if ($servico_id) {
         $stmt_s = $pdo->prepare("SELECT nome, preco FROM servicos WHERE id = ?");
         $stmt_s->execute([$servico_id]);
         $s_info = $stmt_s->fetch();
         if ($s_info) {
             $servico = $s_info['nome'];
+            $valor = (float)$s_info['preco'];
         }
     }
 
     $data_hora = trim($_POST['data_hora'] ?? '');
-    $status = trim($_POST['status'] ?? 'Agendado');
-    $valor = floatval(str_replace(',', '.', $_POST['valor'] ?? '0.00'));
+    $status = 'Agendado'; // Padrão: Agendado
     $observacoes = trim($_POST['observacoes'] ?? '');
 
     if ($pet_id > 0 && !empty($servico) && !empty($data_hora)) {
         try {
             $stmt_ag = $pdo->prepare("INSERT INTO agendamentos (pet_id, servico_id, servico, data_hora, status, valor, observacoes) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt_ag->execute([$pet_id, $servico_id, $servico, $data_hora, $status, $valor, $observacoes]);
-            $mensagem = "<div class='alert alert-success'><span>📅</span> <strong>Agendamento Realizado!</strong> O serviço foi agendado com sucesso!</div>";
+            $toast_notificacao = ['msg' => 'Agendamento para <strong>' . htmlspecialchars($servico) . '</strong> realizado com sucesso!', 'tipo' => 'success', 'icone' => '📅'];
             $active_tab = 'agendamentos';
         } catch (Exception $e) {
             $mensagem = "<div class='alert alert-error'><span>⚠️</span> <strong>Erro ao agendar:</strong> " . htmlspecialchars($e->getMessage()) . "</div>";
@@ -193,33 +220,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Atualização de Agendamento (Edição Completa)
+// Atualização de Agendamento (Edição Completa - Restrita a Agendados / Em Andamento)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'atualizar_agendamento') {
     $agendamento_id = (int)($_POST['agendamento_id'] ?? 0);
     $pet_id = (int)($_POST['pet_id'] ?? 0);
     $servico_id = !empty($_POST['servico_id']) ? (int)$_POST['servico_id'] : null;
     $servico = trim($_POST['servico'] ?? '');
+    $valor = 0.00;
 
     if ($servico_id) {
-        $stmt_s = $pdo->prepare("SELECT nome FROM servicos WHERE id = ?");
+        $stmt_s = $pdo->prepare("SELECT nome, preco FROM servicos WHERE id = ?");
         $stmt_s->execute([$servico_id]);
         $s_info = $stmt_s->fetch();
         if ($s_info) {
             $servico = $s_info['nome'];
+            $valor = (float)$s_info['preco'];
         }
     }
 
     $data_hora = trim($_POST['data_hora'] ?? '');
-    $status = trim($_POST['status'] ?? 'Agendado');
-    $valor = floatval(str_replace(',', '.', $_POST['valor'] ?? '0.00'));
     $observacoes = trim($_POST['observacoes'] ?? '');
 
     if ($agendamento_id > 0 && $pet_id > 0 && !empty($servico) && !empty($data_hora)) {
         try {
-            $stmt_up_ag = $pdo->prepare("UPDATE agendamentos SET pet_id = ?, servico_id = ?, servico = ?, data_hora = ?, status = ?, valor = ?, observacoes = ? WHERE id = ?");
-            $stmt_up_ag->execute([$pet_id, $servico_id, $servico, $data_hora, $status, $valor, $observacoes, $agendamento_id]);
-            $mensagem = "<div class='alert alert-success'><span>✅</span> <strong>Agendamento Atualizado!</strong> Dados do serviço alterados com sucesso!</div>";
-            $active_tab = 'agendamentos';
+            // Verifica se o status atual permite edição (apenas Agendado ou Em Andamento)
+            $stmt_check = $pdo->prepare("SELECT status FROM agendamentos WHERE id = ?");
+            $stmt_check->execute([$agendamento_id]);
+            $status_atual = $stmt_check->fetchColumn();
+
+            if (!in_array($status_atual, ['Agendado', 'Em Andamento'])) {
+                $toast_notificacao = ['msg' => 'Agendamentos com status "' . htmlspecialchars($status_atual) . '" não podem ser editados.', 'tipo' => 'warning', 'icone' => '🔒'];
+                $active_tab = 'agendamentos';
+            } else {
+                $stmt_up_ag = $pdo->prepare("UPDATE agendamentos SET pet_id = ?, servico_id = ?, servico = ?, data_hora = ?, valor = ?, observacoes = ? WHERE id = ?");
+                $stmt_up_ag->execute([$pet_id, $servico_id, $servico, $data_hora, $valor, $observacoes, $agendamento_id]);
+                $toast_notificacao = ['msg' => 'Agendamento atualizado com sucesso!', 'tipo' => 'success', 'icone' => '✏️'];
+                $active_tab = 'agendamentos';
+            }
         } catch (Exception $e) {
             $mensagem = "<div class='alert alert-error'><span>⚠️</span> <strong>Erro:</strong> " . htmlspecialchars($e->getMessage()) . "</div>";
             $active_tab = 'agendamentos';
@@ -227,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Mudança Interativa de Status (Conforme Atendimento)
+// Mudança Interativa de Status (Conforme Atendimento ou Drag and Drop)
 if (isset($_GET['mudar_status']) && isset($_GET['agendamento_id'])) {
     $agendamento_id = (int)$_GET['agendamento_id'];
     $novo_status = trim($_GET['mudar_status']);
@@ -240,10 +277,10 @@ if (isset($_GET['mudar_status']) && isset($_GET['agendamento_id'])) {
             
             if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'status' => $novo_status]);
+                echo json_encode(['success' => true, 'status' => $novo_status, 'agendamento_id' => $agendamento_id]);
                 exit;
             }
-            $mensagem = "<div class='alert alert-success'><span>🔄</span> Status do agendamento atualizado para <strong>$novo_status</strong>!</div>";
+            $toast_notificacao = ['msg' => 'Status do agendamento atualizado para <strong>' . htmlspecialchars($novo_status) . '</strong>!', 'tipo' => 'success', 'icone' => '🔄'];
             $active_tab = 'agendamentos';
         } catch (Exception $e) {
             if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
@@ -699,11 +736,11 @@ foreach ($agendamentos as $ag) {
                         </div>
 
                         <!-- ==============================================
-                             VISÃO 1: 4 COLUNAS KANBAN DE AGENDAMENTOS
+                             VISÃO 1: 4 COLUNAS KANBAN DE AGENDAMENTOS (DRAG & DROP)
                              ============================================== -->
                         <div id="containerVisaoColunas" class="kanban-board">
                             <?php foreach ($colunas_status as $statusChave => $col): ?>
-                                <div class="kanban-column <?= $col['classe'] ?>">
+                                <div class="kanban-column <?= $col['classe'] ?>" data-status-col="<?= $statusChave ?>">
                                     <div class="kanban-column-header">
                                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                                             <span><?= $col['icone'] ?></span>
@@ -712,7 +749,12 @@ foreach ($agendamentos as $ag) {
                                         <span class="kanban-col-count"><?= count($col['itens']) ?></span>
                                     </div>
 
-                                    <div class="kanban-cards-list">
+                                    <div class="kanban-cards-list" 
+                                         data-status="<?= $statusChave ?>" 
+                                         ondragover="handleDragOver(event)" 
+                                         ondragenter="handleDragEnter(event)" 
+                                         ondragleave="handleDragLeave(event)" 
+                                         ondrop="handleDrop(event, '<?= $statusChave ?>')">
                                         <?php if (count($col['itens']) > 0): ?>
                                             <?php foreach ($col['itens'] as $ag): 
                                                 // Avatar do Pet
@@ -721,6 +763,9 @@ foreach ($agendamentos as $ag) {
                                                 
                                                 // Ícone do serviço
                                                 $sIcone = resolverIconeServico($ag['servico_icone'] ?? '', $ag['servico'] ?? '');
+
+                                                // Permissão de Edição: Apenas Agendados e Em Andamento
+                                                $podeEditar = in_array($ag['status'], ['Agendado', 'Em Andamento']);
 
                                                 // JSON para o PopUp
                                                 $jsonAgData = htmlspecialchars(json_encode([
@@ -736,7 +781,16 @@ foreach ($agendamentos as $ag) {
                                                     'observacoes' => $ag['observacoes'] ?? ''
                                                 ]), ENT_QUOTES, 'UTF-8');
                                             ?>
-                                                <div class="kanban-card">
+                                                <div class="kanban-card" 
+                                                     id="card-ag-<?= $ag['id'] ?>" 
+                                                     draggable="true" 
+                                                     ondragstart="handleDragStart(event, <?= $ag['id'] ?>, '<?= $ag['status'] ?>', '<?= addslashes($ag['pet_nome']) ?>')" 
+                                                     ondragend="handleDragEnd(event)" 
+                                                     data-ag-id="<?= $ag['id'] ?>" 
+                                                     data-ag-status="<?= $ag['status'] ?>" 
+                                                     data-pet-nome="<?= htmlspecialchars($ag['pet_nome']) ?>" 
+                                                     data-json="<?= $jsonAgData ?>">
+
                                                     <!-- Data e Hora -->
                                                     <div class="kanban-card-date">
                                                         <span>🕒 <?= date('d/m/Y', strtotime($ag['data_hora'])) ?> às <?= date('H:i', strtotime($ag['data_hora'])) ?></span>
@@ -756,7 +810,7 @@ foreach ($agendamentos as $ag) {
                                                         </div>
                                                     </div>
 
-                                                    <!-- Serviço e Preço -->
+                                                    <!-- Serviço e Preço (Atrelado em linha única) -->
                                                     <div class="kanban-card-service">
                                                         <span style="font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
                                                             <span><?= $sIcone ?></span>
@@ -767,7 +821,10 @@ foreach ($agendamentos as $ag) {
 
                                                     <!-- Observações (PopUp) -->
                                                     <?php if (!empty($ag['observacoes'])): ?>
-                                                        <div class="kanban-card-obs" onclick='abrirModalEditarAgendamento(<?= $jsonAgData ?>)' title="Clique para abrir e ver/editar observações no PopUp">
+                                                        <div class="kanban-card-obs" 
+                                                             style="<?= $podeEditar ? 'cursor: pointer;' : 'cursor: default;' ?>" 
+                                                             <?= $podeEditar ? "onclick='abrirModalEditarAgendamento($jsonAgData)'" : "" ?> 
+                                                             title="<?= $podeEditar ? 'Clique para ver/editar no PopUp' : 'Observações do agendamento' ?>">
                                                             ⭐ <strong>Obs:</strong> <?= htmlspecialchars(mb_strimwidth($ag['observacoes'], 0, 48, "...")) ?>
                                                         </div>
                                                     <?php endif; ?>
@@ -785,19 +842,27 @@ foreach ($agendamentos as $ag) {
 
                                                     <!-- Botões de Ação do Card -->
                                                     <div class="kanban-card-btns">
-                                                        <?php if ($ag['status'] === 'Agendado'): ?>
-                                                            <a href="index.php?tab=agendamentos&mudar_status=Em+Andamento&agendamento_id=<?= $ag['id'] ?>" class="btn btn-warning btn-sm" title="Iniciar Atendimento">
-                                                                ▶ Iniciar
-                                                            </a>
-                                                        <?php elseif ($ag['status'] === 'Em Andamento'): ?>
-                                                            <a href="index.php?tab=agendamentos&mudar_status=Conclu%C3%ADdo&agendamento_id=<?= $ag['id'] ?>" class="btn btn-success btn-sm" title="Concluir Atendimento">
-                                                                ✓ Concluir
-                                                            </a>
-                                                        <?php endif; ?>
+                                                        <span class="status-quick-btn-box">
+                                                            <?php if ($ag['status'] === 'Agendado'): ?>
+                                                                <button type="button" class="btn btn-warning btn-sm" onclick="mudarStatusAgendamento(<?= $ag['id'] ?>, 'Em Andamento')" title="Iniciar Atendimento">
+                                                                    ▶ Iniciar
+                                                                </button>
+                                                            <?php elseif ($ag['status'] === 'Em Andamento'): ?>
+                                                                <button type="button" class="btn btn-success btn-sm" onclick="mudarStatusAgendamento(<?= $ag['id'] ?>, 'Concluído')" title="Concluir Atendimento">
+                                                                    ✓ Concluir
+                                                                </button>
+                                                            <?php endif; ?>
+                                                        </span>
 
-                                                        <button type="button" class="btn btn-secondary btn-sm" onclick='abrirModalEditarAgendamento(<?= $jsonAgData ?>)' title="Ver detalhes completos e observações no PopUp">
-                                                            🔍 PopUp
+                                                        <!-- Edição permitida APENAS para Agendados e Em Andamento -->
+                                                        <button type="button" 
+                                                                class="btn btn-secondary btn-sm btn-card-editar" 
+                                                                style="<?= $podeEditar ? 'display: inline-flex;' : 'display: none;' ?>" 
+                                                                onclick='abrirModalEditarAgendamento(<?= $jsonAgData ?>)' 
+                                                                title="Editar agendamento no PopUp do pet <?= htmlspecialchars($ag['pet_nome']) ?>">
+                                                            ✏️ Editar
                                                         </button>
+
                                                         <a href="excluir_agendamento.php?id=<?= $ag['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente excluir este agendamento?');" title="Excluir">
                                                             🗑️
                                                         </a>
@@ -963,15 +1028,16 @@ foreach ($agendamentos as $ag) {
                                 <div class="form-group">
                                     <label>Ícone / Emoji:</label>
                                     <select name="icone_servico" class="form-control">
+                                        <option value="🐾">🐾 Genérico / Outro</option>
                                         <option value="🛁">🛁 Banho</option>
                                         <option value="✂️">✂️ Tosa</option>
                                         <option value="🧼">🧼 Banho & Tosa</option>
                                         <option value="🩺">🩺 Consulta Veterinária</option>
                                         <option value="💉">💉 Vacinação</option>
                                         <option value="✨">✨ Hidratação</option>
-                                        <option value="🐾">🐾 Higiene Geral</option>
                                         <option value="🚗">🚗 Táxi Dog</option>
-                                        <option value="🦴">🦴 Adestramento / Hotel</option>
+                                        <option value="🦴">🦴 Hospedagem / Hotel</option>
+                                        <option value="🐕">🐕 Passeio / Adestramento</option>
                                     </select>
                                 </div>
 
@@ -1028,6 +1094,16 @@ foreach ($agendamentos as $ag) {
                                             <div style="display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0;">
                                                 <button type="button" class="btn btn-navy btn-sm" onclick="abrirModalNovoAgendamentoComServico(<?= $s['id'] ?>, <?= $s['preco'] ?>, '<?= addslashes($s['nome']) ?>')" title="Agendar este serviço para um pet">
                                                     📅 Agendar
+                                                </button>
+                                                <button type="button" class="btn btn-secondary btn-sm" onclick='abrirModalEditarServico(<?= htmlspecialchars(json_encode([
+                                                    "id" => $s["id"],
+                                                    "nome" => $s["nome"],
+                                                    "preco" => (float)$s["preco"],
+                                                    "duracao_minutos" => (int)$s["duracao_minutos"],
+                                                    "icone" => $s["icone"] ?: "🐾",
+                                                    "descricao" => $s["descricao"] ?? ""
+                                                ]), ENT_QUOTES, "UTF-8") ?>)' title="Editar este serviço">
+                                                    ✏️
                                                 </button>
                                                 <a href="excluir_servico.php?id=<?= $s['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente remover o serviço <?= addslashes($s['nome']) ?> do catálogo?');" title="Excluir este serviço">
                                                     🗑️
@@ -1311,59 +1387,56 @@ foreach ($agendamentos as $ag) {
                     <input type="hidden" name="action" id="agendamentoAction" value="cadastrar_agendamento">
                     <input type="hidden" name="agendamento_id" id="agendamentoId" value="">
                     <input type="hidden" name="servico" id="agendamentoServicoNome" value="">
+                    <input type="hidden" name="valor" id="agendamentoValor" value="0.00">
+                    <input type="hidden" name="status" id="agendamentoStatus" value="Agendado">
 
+                    <!-- Seleção do Pet / Tutor (Em modo de edição mostra dados fixos do pet) -->
                     <div class="form-group" style="margin-bottom: 1.1rem;">
-                        <label>Pet / Tutor: <span class="required">*</span></label>
+                        <label id="lblAgendamentoPet">Pet / Tutor: <span class="required">*</span></label>
                         <select name="pet_id" id="agendamentoPetId" class="form-control" required>
                             <option value="">-- Selecione o Pet --</option>
                             <?php foreach ($lista_pets_select as $p): ?>
-                                <option value="<?= $p['pet_id'] ?>">
+                                <option value="<?= $p['pet_id'] ?>" data-nome="<?= htmlspecialchars($p['pet_nome']) ?>" data-tutor="<?= htmlspecialchars($p['tutor_nome']) ?>" data-especie="<?= htmlspecialchars($p['especie']) ?>">
                                     <?= htmlspecialchars($p['pet_nome']) ?> (<?= htmlspecialchars($p['especie']) ?><?= !empty($p['raca']) ? ' - ' . htmlspecialchars($p['raca']) : '' ?>) - Tutor: <?= htmlspecialchars($p['tutor_nome']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.1rem;">
-                        <div class="form-group">
-                            <label>Tipo de Serviço: <span class="required">*</span></label>
-                            <select name="servico_id" id="agendamentoServicoId" class="form-control" onchange="atualizarPrecoServico()" required>
-                                <option value="">-- Selecione o Serviço --</option>
-                                <?php foreach ($lista_servicos as $s): ?>
-                                    <option value="<?= $s['id'] ?>" data-preco="<?= $s['preco'] ?>" data-nome="<?= htmlspecialchars($s['nome']) ?>">
-                                        <?= resolverIconeServico($s['icone'] ?? '', $s['nome'] ?? '') ?> <?= htmlspecialchars($s['nome']) ?> — R$ <?= number_format($s['preco'], 2, ',', '.') ?> (<?= $s['duracao_minutos'] ?>m)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Valor do Serviço (R$):</label>
-                            <input type="number" step="0.01" min="0" name="valor" id="agendamentoValor" class="form-control" placeholder="0.00" value="0.00">
+                        <div id="infoPetEdicao" class="info-pet-card" style="display: none;">
+                            <div class="info-pet-card-icon" id="infoPetEdicaoIcon">🐶</div>
+                            <div class="info-pet-card-details">
+                                <span class="info-pet-card-name" id="infoPetEdicaoNome">-</span>
+                                <span class="info-pet-card-sub" id="infoPetEdicaoTutor">-</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.1rem;">
-                        <div class="form-group">
-                            <label>Data e Horário: <span class="required">*</span></label>
-                            <input type="datetime-local" name="data_hora" id="agendamentoDataHora" class="form-control" required>
+                    <!-- Tipo de Serviço: Valor atrelado automaticamente sem campo livre de edição -->
+                    <div class="form-group" style="margin-bottom: 1.1rem;">
+                        <label>Tipo de Serviço: <span class="required">*</span></label>
+                        <select name="servico_id" id="agendamentoServicoId" class="form-control" onchange="atualizarPrecoServico()" required>
+                            <option value="">-- Selecione o Serviço --</option>
+                            <?php foreach ($lista_servicos as $s): ?>
+                                <option value="<?= $s['id'] ?>" data-preco="<?= $s['preco'] ?>" data-nome="<?= htmlspecialchars($s['nome']) ?>" data-duracao="<?= $s['duracao_minutos'] ?>" data-icone="<?= resolverIconeServico($s['icone'] ?? '', $s['nome']) ?>">
+                                    <?= resolverIconeServico($s['icone'] ?? '', $s['nome'] ?? '') ?> <?= htmlspecialchars($s['nome']) ?> — R$ <?= number_format($s['preco'], 2, ',', '.') ?> (<?= $s['duracao_minutos'] ?>m)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div id="servicoBoundBadge" class="service-bound-badge">
+                            <span>💰 <strong>Valor atrelado:</strong> <span id="lblValorAtrelado">R$ 0,00</span></span>
+                            <span>⏱️ <strong>Duração estimada:</strong> <span id="lblDuracaoAtrelada">30 min</span></span>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label>Status:</label>
-                            <select name="status" id="agendamentoStatus" class="form-control">
-                                <option value="Agendado">🔵 Agendado</option>
-                                <option value="Em Andamento">🟡 Em Andamento</option>
-                                <option value="Concluído">🟢 Concluído</option>
-                                <option value="Cancelado">🔴 Cancelado</option>
-                            </select>
-                        </div>
+                    <!-- Data e Horário -->
+                    <div class="form-group" style="margin-bottom: 1.1rem;">
+                        <label>Data e Horário do Atendimento: <span class="required">*</span></label>
+                        <input type="datetime-local" name="data_hora" id="agendamentoDataHora" class="form-control" required>
                     </div>
 
                     <!-- Campo de Observações / Recomendações mantido no PopUp -->
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label>Observações / Recomendações:</label>
-                        <textarea name="observacoes" id="agendamentoObservacoes" class="form-control" placeholder="Ex: Cuidado com os ouvidos, usar shampoo neutro, tosa higiênica, comportamento arisco..."></textarea>
+                        <textarea name="observacoes" id="agendamentoObservacoes" class="form-control" rows="3" placeholder="Ex: Cuidado com os ouvidos, usar shampoo neutro, tosa higiênica, comportamento arisco..."></textarea>
                     </div>
 
                     <div class="modal-footer" style="padding: 0; border: none;">
@@ -1372,6 +1445,75 @@ foreach ($agendamentos as $ag) {
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- ========================================================
+         MODAL DE EDIÇÃO DE SERVIÇO DO CATÁLOGO - AC3
+         ======================================================== -->
+    <div id="modalEditarServico" class="modal-overlay" onclick="handleServicoBackdropClick(event)">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <span>✏️</span> Editar Serviço do Catálogo
+                </h3>
+                <button type="button" class="modal-close-btn" onclick="fecharModalEditarServico()">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <form method="POST" action="index.php" id="formEditarServico">
+                    <input type="hidden" name="action" value="atualizar_servico">
+                    <input type="hidden" name="servico_id" id="editServicoId" value="">
+
+                    <div class="form-group" style="margin-bottom: 1.1rem;">
+                        <label>Nome do Serviço: <span class="required">*</span></label>
+                        <input type="text" name="nome_servico" id="editServicoNome" class="form-control" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.1rem;">
+                        <div class="form-group">
+                            <label>Preço Padrão (R$): <span class="required">*</span></label>
+                            <input type="number" step="0.01" min="0" name="preco_servico" id="editServicoPreco" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Duração (minutos):</label>
+                            <input type="number" name="duracao_minutos" id="editServicoDuracao" class="form-control" placeholder="30" value="30">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.1rem;">
+                        <label>Ícone / Emoji:</label>
+                        <select name="icone_servico" id="editServicoIcone" class="form-control">
+                            <option value="🐾">🐾 Genérico / Outro</option>
+                            <option value="🛁">🛁 Banho</option>
+                            <option value="✂️">✂️ Tosa</option>
+                            <option value="🧼">🧼 Banho & Tosa</option>
+                            <option value="🩺">🩺 Consulta Veterinária</option>
+                            <option value="💉">💉 Vacinação</option>
+                            <option value="✨">✨ Hidratação</option>
+                            <option value="🚗">🚗 Táxi Dog</option>
+                            <option value="🦴">🦴 Hospedagem / Hotel</option>
+                            <option value="🐕">🐕 Passeio / Adestramento</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.4rem;">
+                        <label>Descrição do Serviço:</label>
+                        <textarea name="descricao_servico" id="editServicoDescricao" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="modal-footer" style="padding: 0; border: none;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="fecharModalEditarServico()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary btn-sm">💾 Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Fixo de Notificações Toast (Canto Inferior Direito) -->
+    <div id="toastContainer" class="toast-container-bottom-right"></div>
         </div>
     </div>
 
@@ -1429,18 +1571,226 @@ foreach ($agendamentos as $ag) {
             }
         }
 
-        // Mudança de Status Interativa (Conforme o Atendimento)
+        // ==========================================
+        // SISTEMA DE NOTIFICAÇÕES TOAST (CANTO INFERIOR DIREITO - AC3)
+        // ==========================================
+        function mostrarToast(mensagem, tipo = 'success', icone = '✅', duracao = 5000) {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container-bottom-right';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${tipo}`;
+            toast.innerHTML = `
+                <div class="toast-icon">${icone}</div>
+                <div class="toast-content">${mensagem}</div>
+                <button type="button" class="toast-close-btn" onclick="fecharToast(this.parentElement)" title="Fechar notificação">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.add('toast-show');
+            });
+
+            const timer = setTimeout(() => {
+                fecharToast(toast);
+            }, duracao);
+
+            toast._timer = timer;
+        }
+
+        function fecharToast(toast) {
+            if (!toast) return;
+            if (toast._timer) clearTimeout(toast._timer);
+            toast.classList.remove('toast-show');
+            toast.classList.add('toast-hide');
+            setTimeout(() => {
+                if (toast && toast.parentElement) {
+                    toast.parentElement.removeChild(toast);
+                }
+            }, 300);
+        }
+
+        // ==========================================
+        // DRAG AND DROP KANBAN (ARRASTAR E SOLTAR CARDS)
+        // ==========================================
+        let cardArrastadoId = null;
+        let petNomeArrastado = '';
+
+        function handleDragStart(e, agId, statusAtual, petNome) {
+            cardArrastadoId = agId;
+            petNomeArrastado = petNome;
+            e.dataTransfer.setData('text/plain', agId);
+            e.dataTransfer.effectAllowed = 'move';
+            const card = document.getElementById('card-ag-' + agId);
+            if (card) {
+                setTimeout(() => card.classList.add('is-dragging'), 0);
+            }
+        }
+
+        function handleDragEnd(e) {
+            if (cardArrastadoId) {
+                const card = document.getElementById('card-ag-' + cardArrastadoId);
+                if (card) card.classList.remove('is-dragging');
+            }
+            document.querySelectorAll('.kanban-cards-list').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+            cardArrastadoId = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            const targetList = e.currentTarget;
+            if (targetList && targetList.classList.contains('kanban-cards-list')) {
+                targetList.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            const targetList = e.currentTarget;
+            if (targetList && !targetList.contains(e.relatedTarget)) {
+                targetList.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e, novoStatus) {
+            e.preventDefault();
+            const targetList = e.currentTarget;
+            if (targetList) targetList.classList.remove('drag-over');
+
+            const agId = e.dataTransfer.getData('text/plain') || cardArrastadoId;
+            if (!agId) return;
+
+            const card = document.getElementById('card-ag-' + agId);
+            if (!card) return;
+
+            const statusAtual = card.getAttribute('data-ag-status');
+            if (statusAtual === novoStatus) return; // Mesmo status, sem alteração
+
+            moverCardNaInterface(card, agId, statusAtual, novoStatus, targetList);
+            executarAtualizacaoStatusAjax(agId, novoStatus, petNomeArrastado || card.getAttribute('data-pet-nome'));
+        }
+
+        function moverCardNaInterface(card, agId, statusAntigo, novoStatus, targetList) {
+            card.setAttribute('data-ag-status', novoStatus);
+
+            const selInline = card.querySelector('.status-select-inline');
+            if (selInline) selInline.value = novoStatus;
+
+            const emptyPlaceholder = targetList.querySelector('.kanban-empty');
+            if (emptyPlaceholder) emptyPlaceholder.style.display = 'none';
+
+            targetList.appendChild(card);
+
+            // Regra crucial: só permite editar em Agendado e Em Andamento
+            const btnEditar = card.querySelector('.btn-card-editar');
+            const obsBox = card.querySelector('.kanban-card-obs');
+            const podeEditar = (novoStatus === 'Agendado' || novoStatus === 'Em Andamento');
+
+            if (btnEditar) {
+                btnEditar.style.display = podeEditar ? 'inline-flex' : 'none';
+            }
+            if (obsBox) {
+                obsBox.style.cursor = podeEditar ? 'pointer' : 'default';
+            }
+
+            // Atualiza botões de ação rápida
+            const quickBox = card.querySelector('.status-quick-btn-box');
+            if (quickBox) {
+                if (novoStatus === 'Agendado') {
+                    quickBox.innerHTML = `<button type="button" class="btn btn-warning btn-sm" onclick="mudarStatusAgendamento(${agId}, 'Em Andamento')" title="Iniciar Atendimento">▶ Iniciar</button>`;
+                } else if (novoStatus === 'Em Andamento') {
+                    quickBox.innerHTML = `<button type="button" class="btn btn-success btn-sm" onclick="mudarStatusAgendamento(${agId}, 'Concluído')" title="Concluir Atendimento">✓ Concluir</button>`;
+                } else {
+                    quickBox.innerHTML = '';
+                }
+            }
+
+            atualizarContadoresColunas();
+        }
+
+        function atualizarContadoresColunas() {
+            document.querySelectorAll('.kanban-column').forEach(col => {
+                const list = col.querySelector('.kanban-cards-list');
+                const countEl = col.querySelector('.kanban-col-count');
+                if (list && countEl) {
+                    const cards = list.querySelectorAll('.kanban-card');
+                    countEl.textContent = cards.length;
+
+                    let emptyBox = list.querySelector('.kanban-empty');
+                    if (cards.length === 0) {
+                        if (!emptyBox) {
+                            emptyBox = document.createElement('div');
+                            emptyBox.className = 'kanban-empty';
+                            emptyBox.innerHTML = '<div style="font-size: 1.8rem; margin-bottom: 0.3rem;">📋</div>Nenhum agendamento nesta coluna';
+                            list.appendChild(emptyBox);
+                        } else {
+                            emptyBox.style.display = 'flex';
+                        }
+                    } else if (emptyBox) {
+                        emptyBox.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function executarAtualizacaoStatusAjax(agId, novoStatus, petNome) {
+            fetch(`index.php?tab=agendamentos&mudar_status=${encodeURIComponent(novoStatus)}&agendamento_id=${agId}&ajax=1`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const nome = petNome ? ` do pet <strong>${petNome}</strong>` : '';
+                        mostrarToast(`Status do agendamento${nome} atualizado para <strong>${novoStatus}</strong>!`, 'success', '🔄', 5000);
+                    } else {
+                        mostrarToast(`Erro ao atualizar status: ${data.error || 'Falha no servidor'}`, 'error', '⚠️', 5000);
+                    }
+                })
+                .catch(err => {
+                    mostrarToast('Erro de conexão ao atualizar status do agendamento.', 'error', '⚠️', 5000);
+                });
+        }
+
         function mudarStatusAgendamento(agendamentoId, novoStatus) {
-            window.location.href = 'index.php?tab=agendamentos&mudar_status=' + encodeURIComponent(novoStatus) + '&agendamento_id=' + agendamentoId;
+            const card = document.getElementById('card-ag-' + agendamentoId);
+            if (card) {
+                const statusAtual = card.getAttribute('data-ag-status');
+                if (statusAtual === novoStatus) return;
+                const targetList = document.querySelector(`.kanban-cards-list[data-status="${novoStatus}"]`);
+                if (targetList) {
+                    moverCardNaInterface(card, agendamentoId, statusAtual, novoStatus, targetList);
+                }
+                executarAtualizacaoStatusAjax(agendamentoId, novoStatus, card.getAttribute('data-pet-nome'));
+            } else {
+                window.location.href = `index.php?tab=agendamentos&mudar_status=${encodeURIComponent(novoStatus)}&agendamento_id=${agendamentoId}`;
+            }
         }
 
         // Atualização automática do preço ao escolher o serviço
         function atualizarPrecoServico() {
             const select = document.getElementById('agendamentoServicoId');
+            if (!select || select.selectedIndex < 0) return;
             const opt = select.options[select.selectedIndex];
             if (opt && opt.dataset.preco) {
-                document.getElementById('agendamentoValor').value = parseFloat(opt.dataset.preco).toFixed(2);
+                const preco = parseFloat(opt.dataset.preco).toFixed(2);
+                const duracao = opt.dataset.duracao || '30';
+                document.getElementById('agendamentoValor').value = preco;
                 document.getElementById('agendamentoServicoNome').value = opt.dataset.nome || '';
+
+                const lblPreco = document.getElementById('lblValorAtrelado');
+                if (lblPreco) lblPreco.textContent = 'R$ ' + preco.replace('.', ',');
+                const lblDur = document.getElementById('lblDuracaoAtrelada');
+                if (lblDur) lblDur.textContent = duracao + ' min';
             }
         }
 
@@ -1543,15 +1893,19 @@ foreach ($agendamentos as $ag) {
             document.getElementById('modalAgendamentoTitle').innerHTML = '<span>📅</span> Novo Agendamento de Serviço';
             document.getElementById('agendamentoAction').value = 'cadastrar_agendamento';
             document.getElementById('agendamentoId').value = '';
-            document.getElementById('agendamentoPetId').value = '';
             
+            // Restaura seletor de pet e esconde badge de edição
+            const selPet = document.getElementById('agendamentoPetId');
+            selPet.style.display = 'block';
+            selPet.value = '';
+            const infoPet = document.getElementById('infoPetEdicao');
+            if (infoPet) infoPet.style.display = 'none';
+
             // Seleciona o primeiro serviço e atualiza valor
             const selServ = document.getElementById('agendamentoServicoId');
             if (selServ && selServ.options.length > 1) {
                 selServ.selectedIndex = 1;
                 atualizarPrecoServico();
-            } else {
-                document.getElementById('agendamentoValor').value = '60.00';
             }
 
             document.getElementById('agendamentoStatus').value = 'Agendado';
@@ -1579,12 +1933,29 @@ foreach ($agendamentos as $ag) {
         }
 
         function abrirModalEditarAgendamento(dados) {
-            document.getElementById('modalAgendamentoTitle').innerHTML = '<span>✏️</span> Detalhes & Edição do Agendamento #' + dados.id;
+            // Só permite editar quando status for Agendado ou Em Andamento
+            if (dados.status === 'Concluído' || dados.status === 'Cancelado') {
+                mostrarToast(`Agendamentos com status "<strong>${dados.status}</strong>" não podem ser editados.`, 'warning', '🔒', 5000);
+                return;
+            }
+
+            document.getElementById('modalAgendamentoTitle').innerHTML = `<span>✏️</span> Editar Agendamento — Pet: <strong>${dados.pet_nome}</strong>`;
             document.getElementById('agendamentoAction').value = 'atualizar_agendamento';
             document.getElementById('agendamentoId').value = dados.id;
-            document.getElementById('agendamentoPetId').value = dados.pet_id;
 
-            // Busca opção correspondente por ID ou Nome
+            // Mostra info fixa do Pet do agendamento
+            const selPet = document.getElementById('agendamentoPetId');
+            selPet.value = dados.pet_id;
+            selPet.style.display = 'none';
+
+            const infoPet = document.getElementById('infoPetEdicao');
+            if (infoPet) {
+                document.getElementById('infoPetEdicaoNome').textContent = dados.pet_nome || '-';
+                document.getElementById('infoPetEdicaoTutor').textContent = 'Tutor: ' + (dados.tutor_nome || '-');
+                infoPet.style.display = 'flex';
+            }
+
+            // Seleciona o serviço
             const selServ = document.getElementById('agendamentoServicoId');
             let encontrado = false;
             if (dados.servico_id) {
@@ -1600,9 +1971,8 @@ foreach ($agendamentos as $ag) {
                     }
                 }
             }
+            atualizarPrecoServico();
 
-            document.getElementById('agendamentoServicoNome').value = dados.servico || '';
-            document.getElementById('agendamentoValor').value = parseFloat(dados.valor).toFixed(2);
             document.getElementById('agendamentoDataHora').value = dados.data_hora;
             document.getElementById('agendamentoStatus').value = dados.status;
             document.getElementById('agendamentoObservacoes').value = dados.observacoes || '';
@@ -1621,13 +1991,45 @@ foreach ($agendamentos as $ag) {
             }
         }
 
+        // ==========================================
+        // MODAL DE EDIÇÃO DE SERVIÇO (AC3)
+        // ==========================================
+        function abrirModalEditarServico(servico) {
+            document.getElementById('editServicoId').value = servico.id;
+            document.getElementById('editServicoNome').value = servico.nome || '';
+            document.getElementById('editServicoPreco').value = parseFloat(servico.preco).toFixed(2);
+            document.getElementById('editServicoDuracao').value = servico.duracao_minutos || 30;
+            document.getElementById('editServicoIcone').value = servico.icone || '🐾';
+            document.getElementById('editServicoDescricao').value = servico.descricao || '';
+            document.getElementById('modalEditarServico').classList.add('active');
+        }
+
+        function fecharModalEditarServico() {
+            document.getElementById('modalEditarServico').classList.remove('active');
+        }
+
+        function handleServicoBackdropClick(e) {
+            if (e.target.id === 'modalEditarServico') {
+                fecharModalEditarServico();
+            }
+        }
+
         // Fechar com tecla ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 fecharModalDetalhes();
                 fecharModalAgendamento();
+                fecharModalEditarServico();
             }
         });
+
+        // Disparo automático de Toast caso haja mensagem da sessão / POST
+        <?php if (!empty($toast_notificacao)): ?>
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarToast("<?= addslashes($toast_notificacao['msg']) ?>", "<?= $toast_notificacao['tipo'] ?>", "<?= $toast_notificacao['icone'] ?>", 5000);
+        });
+        <?php endif; ?>
+    </script>
     </script>
 </body>
 </html>

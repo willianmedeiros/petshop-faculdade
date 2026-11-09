@@ -13,24 +13,32 @@ A entrega desta terceira fase (AC3) foca na implementação do **Módulo Complet
    - Criação da tabela `agendamentos` com chaves estrangeiras para `pets` (`ON DELETE CASCADE`) e para `servicos` (`ON DELETE SET NULL`).
    - Atualização completa do script de inicialização do Docker (`mysql/init.sql`).
 
-2. **Área de Catálogo de Serviços & Preços (Cards Responsivos):**
-   - Aba e painel dedicado para cadastro de novos serviços com nome, valor (R$), ícone/emoji, duração e descrição.
-   - Exibição do catálogo de serviços em **cards visuais modernos e responsivos**, contendo ícones ilustrativos nativos, tempo estimado de atendimento, valor padrão alinhado em linha única e botões de ação rápida (*📅 Agendar* e *🗑️ Excluir*).
+2. **Área de Catálogo de Serviços & Preços (Cards Responsivos & Edição):**
+   - Aba e painel dedicado para cadastro de novos serviços com nome, valor (R$), ícone/emoji (incluindo opção Genérico `🐾`), duração e descrição.
+   - Exibição do catálogo de serviços em **cards visuais modernos e responsivos**, contendo ícones nativos, tempo estimado de atendimento, valor padrão alinhado em linha única e botões de ação rápida (*📅 Agendar*, *✏️ Editar* e *🗑️ Excluir*).
+   - Modal interativo para edição completa de qualquer serviço já cadastrado (nome, descrição, preço, tempo e ícone).
    - Carregamento dinâmico automático dos serviços e seus respectivos valores no momento de realizar um novo agendamento.
 
-3. **Painel de Agendamentos em 4 Colunas (Fluxo Kanban):**
+3. **Painel de Agendamentos em 4 Colunas com Drag & Drop (Fluxo Kanban):**
    - Organização visual dos atendimentos em 4 colunas bem definidas:
      - 🔵 **Agendados**
      - 🟡 **Em Andamento**
      - 🟢 **Concluídos**
      - 🔴 **Cancelados**
-   - Alteração interativa de status diretamente na visualização conforme a evolução do atendimento do pet (via seletor inline ou botões de avanço rápido).
+   - Suporte completo a **Arrastar e Soltar (Drag and Drop nativo)** dos cards entre as colunas, com atualização automática de status via requisição assíncrona (AJAX) e recálculo instantâneo dos contadores de cada coluna.
+   - **Regra de edição estrita:** O botão e modal de edição de agendamentos só é permitido e exibido para cards que estão nas colunas **Agendados** e **Em Andamento**; cards nas colunas Concluídos e Cancelados são protegidos contra alteração indevida.
    - Alternância com um clique entre a **Visão em Colunas** e a **Visão em Tabela**.
 
-4. **PopUP Modal de Agendamentos:**
+4. **PopUP Modal de Agendamentos Simplificado & Atrelado:**
    - PopUP modal responsivo com efeito de desfoque (*glassmorphism*) para agendar e editar atendimentos.
-   - Carregamento instantâneo do valor ao selecionar o serviço via JavaScript.
+   - **Valor atrelado ao serviço:** O campo manual de valor foi removido do PopUP e atrelado diretamente ao catálogo de serviços cadastrado, exibindo badge com valor e duração estimada.
+   - **Status gerenciado no fluxo:** Campo de status removido do formulário de agendamento, pois a evolução do atendimento é controlada diretamente pelo arrastar e soltar do Kanban ou pelo seletor inline.
+   - Ao editar um agendamento existente, o modal identifica e destaca claramente o pet do atendimento (`✏️ Editar Agendamento — Pet: [Nome do Pet]`).
    - Campo dedicado para **Observações e Recomendações** mantido no PopUP (alergias, cuidados e instruções específicas).
+
+5. **Sistema de Notificações Toast no Canto Inferior Direito:**
+   - As notificações de atualização dos cards de agendamento agora aparecem fixadas no **canto inferior direito** (*bottom-right toast*) com animação suave e desaparecem automaticamente após **5 segundos**.
+   - Eliminação de alertas estáticos no topo da página, garantindo uma interface limpa, moderna e sem quebra visual durante a operação do Kanban.
 
 ## Links:
 

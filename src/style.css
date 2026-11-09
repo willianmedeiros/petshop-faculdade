@@ -1659,6 +1659,173 @@ textarea.form-control {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* ========================================================
+   NOTIFICAÇÕES TOAST (CANTO INFERIOR DIREITO - AC3)
+   ======================================================== */
+.toast-container-bottom-right {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    pointer-events: none;
+    max-width: 400px;
+    width: calc(100% - 32px);
+}
+
+.toast-notification {
+    pointer-events: auto;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 0.9rem 1.15rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    border-left: 4px solid #10b981;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.toast-notification.toast-show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-notification.toast-hide {
+    transform: translateY(20px);
+    opacity: 0;
+}
+
+.toast-notification.toast-success {
+    border-left-color: #10b981;
+}
+
+.toast-notification.toast-warning {
+    border-left-color: #f59e0b;
+}
+
+.toast-notification.toast-error {
+    border-left-color: #ef4444;
+}
+
+.toast-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-content strong {
+    color: #38bdf8;
+}
+
+.toast-close-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0 0 0.5rem;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.toast-close-btn:hover {
+    color: #ffffff;
+}
+
+/* Drag and Drop Kanban Cards */
+.kanban-card {
+    cursor: grab;
+    user-select: none;
+}
+
+.kanban-card:active {
+    cursor: grabbing;
+}
+
+.kanban-card.is-dragging {
+    opacity: 0.35 !important;
+    transform: scale(0.96);
+    border: 2px dashed #3b82f6 !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2) !important;
+}
+
+.kanban-cards-list {
+    min-height: 110px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.kanban-cards-list.drag-over {
+    background-color: rgba(59, 130, 246, 0.08) !important;
+    border: 2px dashed #3b82f6 !important;
+    border-radius: var(--radius-sm);
+}
+
+/* Informações do Pet e Serviço no PopUp */
+.info-pet-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.35rem;
+}
+
+.info-pet-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.info-pet-card-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-pet-card-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.95rem;
+}
+
+.info-pet-card-sub {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.service-bound-badge {
+    margin-top: 0.45rem;
+    font-size: 0.85rem;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    padding: 0.5rem 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 /* ===============================
    RESPONSIVIDADE GERAL
    =============================== */
