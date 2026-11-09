@@ -12,7 +12,7 @@ $stmt_servicos_modal = $pdo->query("SELECT * FROM servicos ORDER BY nome ASC");
 $lista_servicos_global = $stmt_servicos_modal->fetchAll();
 
 // Lista de pets para o modal de agendamento compartilhado
-$stmt_pets_modal = $pdo->query("SELECT p.id as pet_id, p.nome as pet_nome, p.especie, p.raca, c.nome as tutor_nome 
+$stmt_pets_modal = $pdo->query("SELECT p.id as pet_id, p.nome as pet_nome, p.especie, p.raca, p.observacoes, c.nome as tutor_nome 
                                 FROM pets p 
                                 JOIN clientes c ON p.cliente_id = c.id 
                                 ORDER BY p.nome ASC");

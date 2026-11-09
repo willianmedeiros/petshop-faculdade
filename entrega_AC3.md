@@ -14,8 +14,8 @@ A entrega desta terceira fase (AC3) foca na implementação do **Módulo Complet
    - Atualização completa do script de inicialização do Docker (`mysql/init.sql`).
 
 2. **Área de Catálogo de Serviços & Preços (Cards Responsivos & Edição):**
-   - Aba e painel dedicado para cadastro de novos serviços com nome, valor (R$), ícone/emoji (incluindo opção Genérico `🐾`), duração e descrição.
-   - Exibição do catálogo de serviços em **cards visuais modernos e responsivos**, contendo ícones nativos, tempo estimado de atendimento, valor padrão alinhado em linha única e botões de ação rápida (*📅 Agendar*, *✏️ Editar* e *🗑️ Excluir*).
+   - Cadastro e gestão de novos serviços com nome, valor (R$), ícone/emoji (incluindo opção Genérico `🐾`), duração e descrição.
+   - Exibição do catálogo de serviços em **cards visuais modernos e responsivos**, contendo ícones nativos, tempo estimado de atendimento, valor padrão alinhado em linha única e botões de ação rápida (*Agendar*, *✏️ Editar* e *🗑️ Excluir*) com espaçamento otimizado.
    - Modal interativo para edição completa de qualquer serviço já cadastrado (nome, descrição, preço, tempo e ícone).
    - Carregamento dinâmico automático dos serviços e seus respectivos valores no momento de realizar um novo agendamento.
 
@@ -26,15 +26,18 @@ A entrega desta terceira fase (AC3) foca na implementação do **Módulo Complet
      - 🟢 **Concluídos**
      - 🔴 **Cancelados**
    - Suporte completo a **Arrastar e Soltar (Drag and Drop nativo)** dos cards entre as colunas, com atualização automática de status via requisição assíncrona (AJAX) e recálculo instantâneo dos contadores de cada coluna.
-   - **Regra de edição estrita:** O botão e modal de edição de agendamentos só é permitido e exibido para cards que estão nas colunas **Agendados** e **Em Andamento**; cards nas colunas Concluídos e Cancelados são protegidos contra alteração indevida.
+   - **Regra de edição estrita e dinâmica:** O botão e modal de edição só ficam disponíveis para cards em **Agendados** e **Em Andamento**. Caso um card em Concluído seja retornado para Em Andamento ou Agendado, a permissão e o botão de edição são reativados automaticamente.
+   - **Irreversibilidade e Bloqueio de Cancelados:** Cards movidos para a coluna **Cancelados** ficam estilizados em tom cinza desbotado, têm o arrasto desabilitado (`cursor: not-allowed`) e não podem ser movidos para nenhuma etapa anterior nem editados.
+   - **PopUp de Confirmação para Cancelamento:** Ao arrastar para a coluna Cancelados ou selecionar o status Cancelado na tabela, um PopUp modal de confirmação é acionado alertando sobre o caráter irreversível da ação.
+   - **Interface Limpa:** O seletor inline de status foi retirado dos cards das colunas (pois a movimentação ocorre via Drag & Drop e botões rápidos) e mantido exclusivamente na visualização em Tabela.
    - Alternância com um clique entre a **Visão em Colunas** e a **Visão em Tabela**.
 
-4. **PopUP Modal de Agendamentos Simplificado & Atrelado:**
+4. **PopUP Modal de Agendamentos Simplificado & Sincronização de Observações:**
    - PopUP modal responsivo com efeito de desfoque (*glassmorphism*) para agendar e editar atendimentos.
+   - **Sincronização de Observações / Recomendações:** Ao selecionar um pet no agendamento, o campo de observações puxa automaticamente as informações médicas cadastradas no perfil do pet. Caso o pet não possuísse observações cadastradas, ao preencher o campo no agendamento, o cadastro do pet na tabela `pets` é atualizado automaticamente.
    - **Valor atrelado ao serviço:** O campo manual de valor foi removido do PopUP e atrelado diretamente ao catálogo de serviços cadastrado, exibindo badge com valor e duração estimada.
-   - **Status gerenciado no fluxo:** Campo de status removido do formulário de agendamento, pois a evolução do atendimento é controlada diretamente pelo arrastar e soltar do Kanban ou pelo seletor inline.
+   - **Status gerenciado no fluxo:** Campo de status removido do formulário de agendamento, pois a evolução do atendimento é controlada pelo fluxo Kanban.
    - Ao editar um agendamento existente, o modal identifica e destaca claramente o pet do atendimento (`✏️ Editar Agendamento — Pet: [Nome do Pet]`).
-   - Campo dedicado para **Observações e Recomendações** mantido no PopUP (alergias, cuidados e instruções específicas).
 
 5. **Sistema de Notificações Toast no Canto Inferior Direito:**
    - As notificações de atualização dos cards de agendamento agora aparecem fixadas no **canto inferior direito** (*bottom-right toast*) com animação suave e desaparecem automaticamente após **5 segundos**.

@@ -1353,6 +1353,31 @@ textarea.form-control {
     border-color: #cbd5e1;
 }
 
+.kanban-card.is-canceled {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    opacity: 0.65 !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+}
+
+.kanban-card.is-canceled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: #cbd5e1 !important;
+}
+
+.kanban-card.is-canceled .kanban-pet-name,
+.kanban-card.is-canceled .kanban-card-date,
+.kanban-card.is-canceled .kanban-card-price,
+.kanban-card.is-canceled .kanban-tutor-name {
+    color: #64748b !important;
+}
+
+.kanban-card.is-canceled .kanban-card-service {
+    background: #e2e8f0 !important;
+}
+
 .kanban-card-date {
     display: flex;
     align-items: center;

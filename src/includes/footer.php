@@ -25,10 +25,10 @@
                     <!-- Seleção do Pet / Tutor (Em modo de edição mostra dados fixos do pet) -->
                     <div class="form-group" style="margin-bottom: 1.1rem;">
                         <label id="lblAgendamentoPet">Pet / Tutor: <span class="required">*</span></label>
-                        <select name="pet_id" id="agendamentoPetId" class="form-control" required>
+                        <select name="pet_id" id="agendamentoPetId" class="form-control" onchange="atualizarObservacoesPetAoSelecionar()" required>
                             <option value="">-- Selecione o Pet --</option>
                             <?php foreach ($lista_pets_global as $p): ?>
-                                <option value="<?= $p['pet_id'] ?>" data-nome="<?= htmlspecialchars($p['pet_nome']) ?>" data-tutor="<?= htmlspecialchars($p['tutor_nome']) ?>" data-especie="<?= htmlspecialchars($p['especie']) ?>">
+                                <option value="<?= $p['pet_id'] ?>" data-nome="<?= htmlspecialchars($p['pet_nome']) ?>" data-tutor="<?= htmlspecialchars($p['tutor_nome']) ?>" data-especie="<?= htmlspecialchars($p['especie']) ?>" data-observacoes="<?= htmlspecialchars($p['observacoes'] ?? '') ?>">
                                     <?= htmlspecialchars($p['pet_nome']) ?> (<?= htmlspecialchars($p['especie']) ?><?= !empty($p['raca']) ? ' - ' . htmlspecialchars($p['raca']) : '' ?>) - Tutor: <?= htmlspecialchars($p['tutor_nome']) ?>
                                 </option>
                             <?php endforeach; ?>
@@ -145,6 +145,21 @@
                 if (lblPreco) lblPreco.textContent = 'R$ ' + preco.replace('.', ',');
                 const lblDur = document.getElementById('lblDuracaoAtrelada');
                 if (lblDur) lblDur.textContent = duracao + ' min';
+            }
+        }
+
+        function atualizarObservacoesPetAoSelecionar() {
+            const selPet = document.getElementById('agendamentoPetId');
+            if (!selPet || selPet.selectedIndex < 0) return;
+            const opt = selPet.options[selPet.selectedIndex];
+            const obsTextarea = document.getElementById('agendamentoObservacoes');
+            // Só puxa automaticamente se estiver em modo de novo agendamento
+            if (document.getElementById('agendamentoAction').value === 'cadastrar_agendamento') {
+                if (opt && opt.dataset.observacoes !== undefined) {
+                    obsTextarea.value = opt.dataset.observacoes || '';
+                } else {
+                    obsTextarea.value = '';
+                }
             }
         }
 
