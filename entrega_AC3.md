@@ -40,6 +40,16 @@ A entrega desta terceira fase (AC3) foca na implementação do **Módulo Complet
    - As notificações de atualização dos cards de agendamento agora aparecem fixadas no **canto inferior direito** (*bottom-right toast*) com animação suave e desaparecem automaticamente após **5 segundos**.
    - Eliminação de alertas estáticos no topo da página, garantindo uma interface limpa, moderna e sem quebra visual durante a operação do Kanban.
 
+6. **Arquitetura Modular em Páginas Individuais:**
+   - Transição da antiga navegação baseada em abas para páginas dedicadas e independentes, melhorando a manutenibilidade, performance e organização do sistema:
+     - 📊 **Dashboard Geral (`dashboard.php`):** Visão executiva com métricas e KPIs consolidados, atalhos para ações rápidas, próximos agendamentos e catálogo rápido.
+     - 🐶 **Pets & Tutores (`pets.php`):** Gerenciamento completo de pacientes, filtros interativos por espécie (Cães, Gatos, Outros), busca em tempo real e modal de detalhes.
+     - ➕ **Novo Cadastro (`cadastro.php`):** Formulário integrado de cadastro de tutor e pet com preview em tempo real da foto.
+     - 📅 **Agendamentos (`agendamentos.php`):** Painel operacional Kanban em 4 colunas com Drag & Drop e visualização em tabela.
+     - 🏷️ **Serviços & Preços (`servicos.php`):** Catálogo interativo em cards visuais, formulário de novos serviços e modal de edição.
+   - Modularização com inclusão de componentes reutilizáveis (`src/includes/header.php`, `src/includes/footer.php` e `src/includes/functions.php`).
+   - Roteador inteligente em `src/index.php` com redirecionamento automático para `dashboard.php` mantendo compatibilidade retroativa para links antigos com parâmetro `?tab=`.
+
 ## Links:
 
 * **Github:** https://github.com/willianmedeiros/petshop-faculdade

@@ -9,6 +9,6 @@ if ($id) {
     $stmt->execute([$id]);
 }
 
-header("Location: index.php");
+header("Location: pets.php");
 exit;
 ?>

@@ -3,7 +3,7 @@ require_once 'db.php';
 
 $id = $_GET['id'] ?? null;
 if (!$id) {
-    header("Location: index.php?tab=pets");
+    header("Location: pets.php");
     exit;
 }
 
@@ -47,7 +47,7 @@ $stmt->execute([$id]);
 $dados = $stmt->fetch();
 
 if (!$dados) {
-    header("Location: index.php?tab=pets");
+    header("Location: pets.php");
     exit;
 }
 ?>
@@ -62,7 +62,7 @@ if (!$dados) {
 <body style="display: block; background: #f4f7fb; padding: 2rem 1rem;">
     <div style="max-width: 800px; margin: 0 auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <a href="index.php?tab=pets" class="btn btn-secondary btn-sm">&larr; Voltar ao Painel</a>
+            <a href="pets.php" class="btn btn-secondary btn-sm">&larr; Voltar ao Painel</a>
             <span style="font-size: 0.85rem; color: #64748b;">ID do Tutor: #<?= htmlspecialchars($dados['id']) ?></span>
         </div>
 

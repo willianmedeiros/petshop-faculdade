@@ -8,6 +8,6 @@ if ($id) {
     $stmt->execute([(int)$id]);
 }
 
-header("Location: index.php?tab=servicos");
+header("Location: servicos.php");
 exit;
 ?>
