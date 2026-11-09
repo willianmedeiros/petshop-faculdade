@@ -280,10 +280,10 @@ include __DIR__ . '/includes/header.php';
      MODAL POPUP DE DETALHES E EDIÇÃO DE TUTOR & PET
      ======================================================== -->
 <div id="modalDetalhes" class="modal-overlay" onclick="handleBackdropClick(event)">
-    <div class="modal-card">
+    <div class="modal-card modal-card-pet-details">
         <div class="modal-header">
             <h3 class="modal-title">
-                <span>📋</span> Ficha Cadastral do Paciente
+                <span>🐾</span> Ficha Cadastral do Pet & Tutor
             </h3>
             <button type="button" class="modal-close-btn" onclick="fecharModalDetalhes()">✕</button>
         </div>
@@ -291,74 +291,90 @@ include __DIR__ . '/includes/header.php';
         <div class="modal-body">
             <!-- MODO VISUALIZAÇÃO -->
             <div id="modoVisualizacao">
-                <div class="pet-profile-header">
-                    <img id="modalPetFotoImg" src="" alt="Foto" class="pet-profile-avatar" style="display: none;">
-                    <div id="modalPetFotoIcon" class="pet-profile-avatar" style="display: flex;">🐶</div>
+                
+                <!-- Hero Banner do Pet -->
+                <div class="pet-hero-banner">
+                    <img id="modalPetFotoImg" src="" alt="Foto" class="pet-hero-photo" style="display: none;">
+                    <div id="modalPetFotoIcon" class="pet-hero-photo" style="display: flex;">🐶</div>
 
-                    <div class="pet-profile-details">
-                        <h4 id="modalPetNome" class="pet-profile-name">Nome do Pet</h4>
-                        <div class="pet-profile-meta">
+                    <div class="pet-hero-info">
+                        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                            <h3 id="modalPetNome" class="pet-hero-name">Nome do Pet</h3>
+                            <span id="modalPetIdBadge" class="pet-id-pill">#PET-0</span>
+                        </div>
+                        <div class="pet-hero-badges">
                             <span id="modalPetEspecie" class="badge badge-dog">Espécie</span>
-                            <span id="modalPetRaca" style="color: #64748b; font-size: 0.85rem;">Raça</span>
-                            <span style="color: #cbd5e1;">•</span>
-                            <span id="modalPetIdade" style="color: #64748b; font-size: 0.85rem;">Idade</span>
+                            <span id="modalPetRaca" class="pet-hero-badge">Raça</span>
+                            <span id="modalPetIdade" class="pet-hero-badge">Idade</span>
+                            <span class="pet-hero-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">✓ Ativo</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="info-section">
-                    <div class="info-section-title">
-                        <span>👤</span> Tutor Responsável
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-item-label">Nome Completo</span>
-                            <span class="info-item-value" id="modalTutorNome">-</span>
+                <!-- Grid de 2 Seções Lado a Lado (Tutor & Registro) -->
+                <div class="pet-details-sections-grid">
+                    
+                    <!-- Seção 1: Tutor Responsável -->
+                    <div class="pet-details-card">
+                        <div class="pet-details-card-header">
+                            <span>👤</span>
+                            <h4>Tutor Responsável</h4>
                         </div>
-                        <div class="info-item">
-                            <span class="info-item-label">Telefone / WhatsApp</span>
-                            <span class="info-item-value" id="modalTutorTelefone">-</span>
-                        </div>
-                        <div class="info-item" style="grid-column: 1 / -1;">
-                            <span class="info-item-label">E-mail</span>
-                            <span class="info-item-value" id="modalTutorEmail">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-section">
-                    <div class="info-section-title">
-                        <span>📝</span> Detalhes & Observações do Animal
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-item-label">Nome de Registro</span>
-                            <span class="info-item-value" id="modalPetNomeInfo">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-item-label">Espécie / Linhagem</span>
-                            <span class="info-item-value" id="modalPetRacaInfo">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-item-label">Data de Cadastro</span>
-                            <span class="info-item-value" id="modalDataCadastro">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-item-label">Situação Cadastral</span>
-                            <span class="info-item-value" style="color: #10b981; font-weight: 700;">Ativo</span>
-                        </div>
-                        <div class="info-item" style="grid-column: 1 / -1;">
-                            <span class="info-item-label">Preferências / Recomendações Clínicas</span>
-                            <div class="info-item-value" id="modalPetObservacoes" style="background: #f8fafc; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 500;">
-                                Nenhuma observação registrada.
+                        <div class="pet-details-card-body">
+                            <div class="detail-field">
+                                <span class="detail-field-label">Nome Completo</span>
+                                <span class="detail-field-val" id="modalTutorNome">-</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">Telefone / WhatsApp</span>
+                                <span class="detail-field-val highlight-phone" id="modalTutorTelefone">-</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">E-mail</span>
+                                <span class="detail-field-val" id="modalTutorEmail">-</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Seção 2: Dados de Registro do Pet -->
+                    <div class="pet-details-card">
+                        <div class="pet-details-card-header">
+                            <span>📋</span>
+                            <h4>Dados de Registro</h4>
+                        </div>
+                        <div class="pet-details-card-body">
+                            <div class="detail-field">
+                                <span class="detail-field-label">Nome no Registro</span>
+                                <span class="detail-field-val" id="modalPetNomeInfo">-</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">Espécie & Linhagem</span>
+                                <span class="detail-field-val" id="modalPetRacaInfo">-</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">Data de Cadastro</span>
+                                <span class="detail-field-val" id="modalDataCadastro">-</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="modal-footer" style="padding: 0; border: none; margin-top: 1.5rem;">
+                <!-- Seção 3: Observações & Recomendações Clínicas em Lista (Amarelo Clarinho) -->
+                <div class="pet-obs-section-card">
+                    <div class="pet-obs-section-header">
+                        <span style="font-size: 1.15rem;">⭐</span>
+                        <h4>Observações & Recomendações Clínicas (Ficha Permanente)</h4>
+                    </div>
+                    <div id="modalPetObservacoesContainer" class="pet-obs-section-body">
+                        <!-- Itens da lista injetados via JS -->
+                    </div>
+                </div>
+
+                <!-- Footer de Ações do Modal -->
+                <div class="modal-footer-actions">
                     <a href="#" id="modalBtnExcluir" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir permanentemente este cadastro?');">
-                        <span>🗑️</span> Excluir
+                        <span>🗑️</span> Excluir Cadastro
                     </a>
                     <button type="button" class="btn btn-primary btn-sm" onclick="alternarModoEdicao(true)">
                         <span>✏️</span> Editar Informações
@@ -429,8 +445,30 @@ include __DIR__ . '/includes/header.php';
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1.4rem;">
-                        <label>Preferências / Observações:</label>
-                        <textarea name="observacoes" id="editPetObservacoes" class="form-control" rows="3"></textarea>
+                        <label style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>⭐ Preferências / Observações Clínicas (Ficha do Pet):</span>
+                            <span style="font-size: 0.75rem; color: #64748b; font-weight: 500;">Itens da lista permanente</span>
+                        </label>
+                        <div class="obs-list-builder-box">
+                            <div class="obs-input-row">
+                                <input type="text" id="inputNovoItemObsEdicao" class="form-control" placeholder="Ex: Cuidado com as orelhas ao tomar banho..." onkeydown="if(event.key === 'Enter'){ event.preventDefault(); adicionarItemObsEdicao(); }">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarItemObsEdicao()">+ Adicionar Item</button>
+                            </div>
+                            <!-- Chips Rápidos no Modo Edição -->
+                            <div class="obs-quick-chips">
+                                <span class="chip-label">Sugestões:</span>
+                                <button type="button" class="obs-chip" onclick="adicionarChipObsEdicao('Cuidado com as orelhas ao banhar')">👂 Orelhas</button>
+                                <button type="button" class="obs-chip" onclick="adicionarChipObsEdicao('Alérgico a perfumes / cosméticos')">⚠️ Alergia</button>
+                                <button type="button" class="obs-chip" onclick="adicionarChipObsEdicao('Sensível ao tocar nas patas')">🐾 Patas</button>
+                                <button type="button" class="obs-chip" onclick="adicionarChipObsEdicao('Medo do barulho do secador')">💨 Secador</button>
+                                <button type="button" class="obs-chip" onclick="adicionarChipObsEdicao('Dócil com outros animais')">🐶 Dócil</button>
+                                <button type="button" class="obs-chip" onclick="adicionarChipObsEdicao('Arisco / Estressado com estranhos')">🐱 Arisco</button>
+                            </div>
+                            <div id="listaItensObsEdicaoContainer" class="obs-items-active-list">
+                                <!-- Itens dinâmicos -->
+                            </div>
+                            <textarea name="observacoes" id="editPetObservacoes" class="form-control" style="display: none;"></textarea>
+                        </div>
                     </div>
 
                     <div class="modal-footer" style="padding: 0; border: none;">
@@ -445,6 +483,17 @@ include __DIR__ . '/includes/header.php';
 
 <script>
 let dadosAtuais = null;
+let itensObsEdicao = [];
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
 function abrirModalDetalhes(dados) {
     dadosAtuais = dados;
@@ -462,6 +511,7 @@ function abrirModalDetalhes(dados) {
     }
 
     document.getElementById('modalPetNome').textContent = dados.pet_nome || 'Sem Nome';
+    document.getElementById('modalPetIdBadge').textContent = '#PET-' + (dados.pet_id || '0');
     document.getElementById('modalPetEspecie').textContent = dados.especie || 'Espécie Indefinida';
     document.getElementById('modalPetRaca').textContent = dados.raca || 'SRD';
     document.getElementById('modalPetIdade').textContent = dados.idade ? 'Idade: ' + dados.idade : 'Idade não informada';
@@ -471,12 +521,31 @@ function abrirModalDetalhes(dados) {
     document.getElementById('modalTutorEmail').textContent = dados.email;
 
     document.getElementById('modalPetNomeInfo').textContent = dados.pet_nome || '-';
-    document.getElementById('modalPetRacaInfo').textContent = (dados.especie || '') + ' - ' + (dados.raca || '');
+    document.getElementById('modalPetRacaInfo').textContent = (dados.especie || '') + (dados.raca ? ' - ' + dados.raca : '');
     document.getElementById('modalDataCadastro').textContent = dados.data_cadastro;
-    document.getElementById('modalPetObservacoes').textContent = dados.observacoes ? dados.observacoes : 'Nenhuma observação ou preferência registrada.';
+
+    // Renderiza a lista de observações permanente do Pet (amarelo clarinho)
+    const obsContainer = document.getElementById('modalPetObservacoesContainer');
+    if (dados.observacoes && dados.observacoes.trim() !== '') {
+        const lines = dados.observacoes.split(/\r?\n|;/).map(s => s.trim()).filter(s => s.length > 0);
+        if (lines.length > 0) {
+            let listHtml = '<ul class="pet-obs-list-styled">';
+            lines.forEach(item => {
+                const cleanItem = item.replace(/^[•\-\*\s]+/, '');
+                listHtml += `<li><span class="obs-item-bullet">⭐</span> <span class="obs-item-text">${escapeHtml(cleanItem)}</span></li>`;
+            });
+            listHtml += '</ul>';
+            obsContainer.innerHTML = listHtml;
+        } else {
+            obsContainer.innerHTML = '<div class="pet-obs-empty"><span>ℹ️</span> Nenhuma recomendação clínica registrada na ficha do animal.</div>';
+        }
+    } else {
+        obsContainer.innerHTML = '<div class="pet-obs-empty"><span>ℹ️</span> Nenhuma recomendação clínica registrada na ficha do animal.</div>';
+    }
 
     document.getElementById('modalBtnExcluir').href = 'excluir.php?id=' + dados.cliente_id;
 
+    // Preenche dados do formulário de edição
     document.getElementById('editClienteId').value = dados.cliente_id;
     document.getElementById('editPetId').value = dados.pet_id;
     document.getElementById('editTutorNome').value = dados.cliente_nome;
@@ -487,10 +556,69 @@ function abrirModalDetalhes(dados) {
     document.getElementById('editPetEspecie').value = dados.especie || '';
     document.getElementById('editPetRaca').value = dados.raca !== 'Não informada' ? dados.raca : '';
     document.getElementById('editPetIdade').value = dados.idade !== 'Não informada' ? dados.idade : '';
-    document.getElementById('editPetObservacoes').value = dados.observacoes || '';
+    
+    // Inicializa a lista de observações no modo edição
+    itensObsEdicao = [];
+    if (dados.observacoes && dados.observacoes.trim() !== '') {
+        const lines = dados.observacoes.split(/\r?\n|;/).map(s => s.trim()).filter(s => s.length > 0);
+        lines.forEach(item => {
+            const clean = item.replace(/^[•\-\*\s]+/, '');
+            if (clean) itensObsEdicao.push(clean);
+        });
+    }
+    renderizarItensObsEdicao();
 
     alternarModoEdicao(false);
     document.getElementById('modalDetalhes').classList.add('active');
+}
+
+// Funções da Lista de Observações no Modo de Edição
+function renderizarItensObsEdicao() {
+    const container = document.getElementById('listaItensObsEdicaoContainer');
+    const textarea = document.getElementById('editPetObservacoes');
+    if (!container) return;
+
+    if (itensObsEdicao.length === 0) {
+        container.innerHTML = '<p class="obs-items-empty">Nenhum item na lista permanente. Adicione novos itens acima.</p>';
+        textarea.value = '';
+        return;
+    }
+
+    let html = '';
+    itensObsEdicao.forEach((item, index) => {
+        html += `
+            <div class="obs-list-item-tag">
+                <span>⭐ ${escapeHtml(item)}</span>
+                <button type="button" class="obs-item-remove-btn" onclick="removerItemObsEdicao(${index})" title="Remover item">✕</button>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    textarea.value = itensObsEdicao.map(it => '• ' + it).join('\n');
+}
+
+function adicionarItemObsEdicao() {
+    const input = document.getElementById('inputNovoItemObsEdicao');
+    if (!input) return;
+    const val = input.value.trim().replace(/^[•\-\*\s]+/, '');
+    if (val) {
+        itensObsEdicao.push(val);
+        renderizarItensObsEdicao();
+        input.value = '';
+        input.focus();
+    }
+}
+
+function adicionarChipObsEdicao(texto) {
+    if (!itensObsEdicao.includes(texto)) {
+        itensObsEdicao.push(texto);
+        renderizarItensObsEdicao();
+    }
+}
+
+function removerItemObsEdicao(index) {
+    itensObsEdicao.splice(index, 1);
+    renderizarItensObsEdicao();
 }
 
 function fecharModalDetalhes() {

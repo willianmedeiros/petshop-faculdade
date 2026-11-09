@@ -133,15 +133,44 @@ include __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Preferências / Observações Especiais:</label>
-                <textarea name="observacoes" class="form-control" placeholder="Ex: Alérgico a perfume, não gosta que toquem nas patas, dócil com crianças..."></textarea>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>⭐ Observações / Recomendações Clínicas (Ficha Permanente do Pet):</span>
+                    <span style="font-size: 0.75rem; color: #64748b; font-weight: 500;">Itens da lista permanente</span>
+                </label>
+                
+                <div class="obs-list-builder-box">
+                    <div class="obs-input-row">
+                        <input type="text" id="inputNovoItemObsCadastro" class="form-control" placeholder="Ex: Cuidado com as orelhas ao tomar banho..." onkeydown="if(event.key === 'Enter'){ event.preventDefault(); adicionarItemObsCadastro(); }">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarItemObsCadastro()">+ Adicionar Item</button>
+                    </div>
+
+                    <!-- Chips de Sugestões Rápidas -->
+                    <div class="obs-quick-chips">
+                        <span class="chip-label">Sugestões rápidas:</span>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Cuidado com as orelhas ao banhar')">👂 Orelhas</button>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Alérgico a perfumes / cosméticos')">⚠️ Alergia</button>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Sensível ao tocar nas patas')">🐾 Patas</button>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Medo do barulho do secador')">💨 Secador</button>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Dócil com outros animais')">🐶 Dócil</button>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Arisco / Estressado com estranhos')">🐱 Arisco</button>
+                        <button type="button" class="obs-chip" onclick="adicionarChipObsCadastro('Necessita medicação controlada')">💊 Medicação</button>
+                    </div>
+
+                    <!-- Lista de itens ativos adicionados -->
+                    <div id="listaItensObsCadastroContainer" class="obs-items-active-list">
+                        <p class="obs-items-empty" id="obsEmptyNoticeCadastro">Nenhum item adicionado à lista permanente ainda. Adicione itens acima ou clique nas sugestões.</p>
+                    </div>
+
+                    <!-- Textarea sincronizado para o envio do formulário via POST -->
+                    <textarea name="observacoes" id="textareaObservacoesSync" class="form-control" style="display: none;"></textarea>
+                </div>
             </div>
         </div>
 
         <!-- Botões de Ação do Formulário -->
         <div class="form-actions-full">
-            <button type="reset" class="btn btn-secondary" onclick="resetFilePreview('previewFotoCadastro', 'placeholderFotoCadastro')">
+            <button type="reset" class="btn btn-secondary" onclick="resetFormularioCadastro()">
                 Limpar Campos
             </button>
             <button type="submit" class="btn btn-primary">
@@ -152,6 +181,72 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <script>
+let itensObsCadastro = [];
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function renderizarItensObsCadastro() {
+    const container = document.getElementById('listaItensObsCadastroContainer');
+    const textarea = document.getElementById('textareaObservacoesSync');
+    if (!container) return;
+
+    if (itensObsCadastro.length === 0) {
+        container.innerHTML = '<p class="obs-items-empty" id="obsEmptyNoticeCadastro">Nenhum item adicionado à lista permanente ainda. Adicione itens acima ou clique nas sugestões.</p>';
+        textarea.value = '';
+        return;
+    }
+
+    let html = '';
+    itensObsCadastro.forEach((item, index) => {
+        html += `
+            <div class="obs-list-item-tag">
+                <span>⭐ ${escapeHtml(item)}</span>
+                <button type="button" class="obs-item-remove-btn" onclick="removerItemObsCadastro(${index})" title="Remover item">✕</button>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    textarea.value = itensObsCadastro.map(it => '• ' + it).join('\n');
+}
+
+function adicionarItemObsCadastro() {
+    const input = document.getElementById('inputNovoItemObsCadastro');
+    if (!input) return;
+    const val = input.value.trim().replace(/^[•\-\*\s]+/, '');
+    if (val) {
+        itensObsCadastro.push(val);
+        renderizarItensObsCadastro();
+        input.value = '';
+        input.focus();
+    }
+}
+
+function adicionarChipObsCadastro(texto) {
+    if (!itensObsCadastro.includes(texto)) {
+        itensObsCadastro.push(texto);
+        renderizarItensObsCadastro();
+    }
+}
+
+function removerItemObsCadastro(index) {
+    itensObsCadastro.splice(index, 1);
+    renderizarItensObsCadastro();
+}
+
+function resetFormularioCadastro() {
+    resetFilePreview('previewFotoCadastro', 'placeholderFotoCadastro');
+    itensObsCadastro = [];
+    renderizarItensObsCadastro();
+}
+
 // Preview interativo da foto
 function handleFilePreview(input, imgId, placeholderId) {
     if (input.files && input.files[0]) {

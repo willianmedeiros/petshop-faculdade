@@ -38,17 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt_ag = $pdo->prepare("INSERT INTO agendamentos (pet_id, servico_id, servico, data_hora, status, valor, observacoes) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt_ag->execute([$pet_id, $servico_id, $servico, $data_hora, $status, $valor, $observacoes]);
 
-            // Se o pet não tinha observações cadastradas previamente e agora foram informadas, atualiza o cadastro do pet
-            if (!empty($observacoes)) {
-                $stmt_p_check = $pdo->prepare("SELECT observacoes FROM pets WHERE id = ?");
-                $stmt_p_check->execute([$pet_id]);
-                $obs_pet_atual = trim($stmt_p_check->fetchColumn() ?: '');
-                if (empty($obs_pet_atual)) {
-                    $stmt_up_pet = $pdo->prepare("UPDATE pets SET observacoes = ? WHERE id = ?");
-                    $stmt_up_pet->execute([$observacoes, $pet_id]);
-                }
-            }
-
             $toast_notificacao = [
                 'msg' => 'Agendamento de <strong>' . htmlspecialchars($servico) . '</strong> realizado com sucesso!',
                 'tipo' => 'success',
@@ -98,17 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             } else {
                 $stmt_up_ag = $pdo->prepare("UPDATE agendamentos SET pet_id = ?, servico_id = ?, servico = ?, data_hora = ?, valor = ?, observacoes = ? WHERE id = ?");
                 $stmt_up_ag->execute([$pet_id, $servico_id, $servico, $data_hora, $valor, $observacoes, $agendamento_id]);
-
-                // Se o pet não tinha observações cadastradas previamente e agora foram informadas, atualiza o cadastro do pet
-                if (!empty($observacoes)) {
-                    $stmt_p_check = $pdo->prepare("SELECT observacoes FROM pets WHERE id = ?");
-                    $stmt_p_check->execute([$pet_id]);
-                    $obs_pet_atual = trim($stmt_p_check->fetchColumn() ?: '');
-                    if (empty($obs_pet_atual)) {
-                        $stmt_up_pet = $pdo->prepare("UPDATE pets SET observacoes = ? WHERE id = ?");
-                        $stmt_up_pet->execute([$observacoes, $pet_id]);
-                    }
-                }
 
                 $toast_notificacao = [
                     'msg' => 'Agendamento atualizado com sucesso!',
@@ -177,7 +155,7 @@ if (isset($_GET['mudar_status']) && isset($_GET['agendamento_id'])) {
 // ==========================================
 $busca_ag = trim($_GET['busca_ag'] ?? '');
 
-$query_ag = "SELECT a.*, p.nome as pet_nome, p.especie, p.raca, p.foto as pet_foto,
+$query_ag = "SELECT a.*, p.nome as pet_nome, p.especie, p.raca, p.foto as pet_foto, p.observacoes as pet_observacoes,
                     c.id as tutor_id, c.nome as tutor_nome, c.telefone as tutor_telefone, c.email as tutor_email,
                     s.icone as servico_icone
              FROM agendamentos a
@@ -321,7 +299,8 @@ include __DIR__ . '/includes/header.php';
                                 'data_hora' => date('Y-m-d\TH:i', strtotime($ag['data_hora'])),
                                 'status' => $ag['status'],
                                 'valor' => $ag['valor'],
-                                'observacoes' => $ag['observacoes'] ?? ''
+                                'observacoes' => $ag['observacoes'] ?? '',
+                                'pet_observacoes' => $ag['pet_observacoes'] ?? ''
                             ]), ENT_QUOTES, 'UTF-8');
                         ?>
                             <div class="kanban-card <?= $isCanceled ? 'is-canceled' : '' ?>" 
@@ -340,6 +319,7 @@ include __DIR__ . '/includes/header.php';
                                  data-data-hora="<?= date('Y-m-d\TH:i', strtotime($ag['data_hora'])) ?>"
                                  data-valor="<?= $ag['valor'] ?>"
                                  data-observacoes="<?= htmlspecialchars($ag['observacoes'] ?? '') ?>"
+                                 data-pet-observacoes="<?= htmlspecialchars($ag['pet_observacoes'] ?? '') ?>"
                                  data-json="<?= $jsonAgData ?>">
 
                                 <!-- Data e Hora -->
@@ -370,13 +350,22 @@ include __DIR__ . '/includes/header.php';
                                     <span class="kanban-card-price">R$ <?= number_format($ag['valor'], 2, ',', '.') ?></span>
                                 </div>
 
-                                <!-- Observações (PopUp) -->
-                                <?php if (!empty($ag['observacoes'])): ?>
-                                    <div class="kanban-card-obs" 
+                                <!-- Observações Clínicas & Atendimento (Amarelo Clarinho + Azul) -->
+                                <?php if (!empty($ag['pet_observacoes'])): ?>
+                                    <div class="kanban-obs-box obs-padrao-pet" 
                                          style="<?= $podeEditar ? 'cursor: pointer;' : 'cursor: default;' ?>" 
                                          <?= $podeEditar ? "onclick='abrirModalEditarAgendamento({$ag['id']})'" : "" ?> 
-                                         title="<?= $podeEditar ? 'Clique para ver/editar no PopUp' : 'Observações do agendamento' ?>">
-                                        ⭐ <strong>Obs:</strong> <?= htmlspecialchars(mb_strimwidth($ag['observacoes'], 0, 48, "...")) ?>
+                                         title="Ficha Permanente do Pet: <?= htmlspecialchars($ag['pet_observacoes']) ?>">
+                                        ⭐ <strong>Ficha:</strong> <?= htmlspecialchars(mb_strimwidth(trim(preg_replace('/\s+/', ' ', str_replace(['•', '*'], '', $ag['pet_observacoes']))), 0, 48, "...")) ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($ag['observacoes'])): ?>
+                                    <div class="kanban-obs-box obs-agendamento-especifico" 
+                                         style="<?= $podeEditar ? 'cursor: pointer;' : 'cursor: default;' ?>" 
+                                         <?= $podeEditar ? "onclick='abrirModalEditarAgendamento({$ag['id']})'" : "" ?> 
+                                         title="Observação deste Atendimento: <?= htmlspecialchars($ag['observacoes']) ?>">
+                                        📌 <strong>Atendimento:</strong> <?= htmlspecialchars(mb_strimwidth(trim(preg_replace('/\s+/', ' ', $ag['observacoes'])), 0, 48, "...")) ?>
                                     </div>
                                 <?php endif; ?>
 
@@ -427,13 +416,13 @@ include __DIR__ . '/includes/header.php';
         <table class="pet-table">
             <thead>
                 <tr>
-                    <th>Data / Horário</th>
-                    <th>Pet & Tutor</th>
-                    <th>Serviço</th>
-                    <th>Valor</th>
-                    <th>Status do Atendimento</th>
-                    <th>Observações</th>
-                    <th style="text-align: right;">Ações</th>
+                    <th style="min-width: 140px;">Data / Horário</th>
+                    <th style="min-width: 180px;">Pet & Tutor</th>
+                    <th style="min-width: 130px;">Serviço</th>
+                    <th style="min-width: 95px;">Valor</th>
+                    <th style="min-width: 195px;">Status do Atendimento</th>
+                    <th style="min-width: 250px;">Observações</th>
+                    <th style="text-align: right; min-width: 120px;">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -456,7 +445,8 @@ include __DIR__ . '/includes/header.php';
                             'data_hora' => date('Y-m-d\TH:i', strtotime($ag['data_hora'])),
                             'status' => $ag['status'],
                             'valor' => $ag['valor'],
-                            'observacoes' => $ag['observacoes'] ?? ''
+                            'observacoes' => $ag['observacoes'] ?? '',
+                            'pet_observacoes' => $ag['pet_observacoes'] ?? ''
                         ]), ENT_QUOTES, 'UTF-8');
                     ?>
                         <tr id="tr-ag-<?= $ag['id'] ?>" 
@@ -470,6 +460,7 @@ include __DIR__ . '/includes/header.php';
                             data-data-hora="<?= date('Y-m-d\TH:i', strtotime($ag['data_hora'])) ?>" 
                             data-valor="<?= $ag['valor'] ?>" 
                             data-observacoes="<?= htmlspecialchars($ag['observacoes'] ?? '') ?>" 
+                            data-pet-observacoes="<?= htmlspecialchars($ag['pet_observacoes'] ?? '') ?>" 
                             data-json="<?= $jsonAgData ?>">
                             <td>
                                 <div style="font-weight: 700; color: #1e293b; font-size: 0.92rem;">
@@ -518,13 +509,21 @@ include __DIR__ . '/includes/header.php';
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if (!empty($ag['observacoes'])): ?>
-                                    <span style="font-size: 0.85rem; color: #b45309; <?= $podeEditarTab ? 'cursor: pointer;' : 'cursor: default;' ?>" <?= $podeEditarTab ? "onclick='abrirModalEditarAgendamento({$ag['id']})'" : "" ?> title="<?= $podeEditarTab ? 'Ver e editar observações no PopUp' : 'Observações do atendimento' ?>">
-                                        ⭐ <?= htmlspecialchars(mb_strimwidth($ag['observacoes'], 0, 32, "...")) ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span style="color: #94a3b8; font-size: 0.82rem;">-</span>
-                                <?php endif; ?>
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+                                    <?php if (!empty($ag['pet_observacoes'])): ?>
+                                        <span class="table-obs-badge obs-yellow" title="Ficha Permanente do Pet: <?= htmlspecialchars($ag['pet_observacoes']) ?>" <?= $podeEditarTab ? "style='cursor: pointer;' onclick='abrirModalEditarAgendamento({$ag['id']})'" : "" ?>>
+                                            ⭐ <strong>Ficha:</strong> <?= htmlspecialchars(mb_strimwidth(trim(preg_replace('/\s+/', ' ', str_replace(['•', '*'], '', $ag['pet_observacoes']))), 0, 36, "...")) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($ag['observacoes'])): ?>
+                                        <span class="table-obs-badge obs-blue" title="Observação deste Atendimento: <?= htmlspecialchars($ag['observacoes']) ?>" <?= $podeEditarTab ? "style='cursor: pointer;' onclick='abrirModalEditarAgendamento({$ag['id']})'" : "" ?>>
+                                            📌 <strong>Atendimento:</strong> <?= htmlspecialchars(mb_strimwidth(trim(preg_replace('/\s+/', ' ', $ag['observacoes'])), 0, 36, "...")) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if (empty($ag['pet_observacoes']) && empty($ag['observacoes'])): ?>
+                                        <span style="color: #94a3b8; font-size: 0.82rem;">-</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td style="text-align: right; white-space: nowrap;">
                                 <?php if ($podeEditarTab): ?>
@@ -759,19 +758,18 @@ function moverCardNaInterface(card, agId, statusAntigo, novoStatus, targetList) 
     // Regra: só permitir editar quando for "Agendado" ou "Em Andamento"
     const podeEditar = (novoStatus === 'Agendado' || novoStatus === 'Em Andamento');
     const btnEditar = card.querySelector('.btn-card-editar');
-    const obsBox = card.querySelector('.kanban-card-obs');
 
     if (btnEditar) {
         btnEditar.style.display = podeEditar ? 'inline-flex' : 'none';
     }
-    if (obsBox) {
+    card.querySelectorAll('.kanban-obs-box').forEach(obsBox => {
         obsBox.style.cursor = podeEditar ? 'pointer' : 'default';
         if (podeEditar) {
             obsBox.onclick = function() { abrirModalEditarAgendamento(agId); };
         } else {
             obsBox.onclick = null;
         }
-    }
+    });
 
     // Atualiza botões rápidos de ação
     const quickBox = card.querySelector('.status-quick-btn-box');
@@ -938,7 +936,8 @@ function abrirModalEditarAgendamento(param) {
             data_hora: card.getAttribute('data-data-hora'),
             status: card.getAttribute('data-ag-status'),
             valor: card.getAttribute('data-valor'),
-            observacoes: card.getAttribute('data-observacoes')
+            observacoes: card.getAttribute('data-observacoes'),
+            pet_observacoes: card.getAttribute('data-pet-observacoes') || ''
         };
     } else if (tr) {
         dados = {
@@ -951,7 +950,8 @@ function abrirModalEditarAgendamento(param) {
             data_hora: tr.getAttribute('data-data-hora'),
             status: tr.getAttribute('data-ag-status'),
             valor: tr.getAttribute('data-valor'),
-            observacoes: tr.getAttribute('data-observacoes')
+            observacoes: tr.getAttribute('data-observacoes'),
+            pet_observacoes: tr.getAttribute('data-pet-observacoes') || ''
         };
     } else if (typeof param === 'object' && param !== null) {
         dados = param;
@@ -973,6 +973,11 @@ function abrirModalEditarAgendamento(param) {
     const selPet = document.getElementById('agendamentoPetId');
     selPet.value = dados.pet_id;
     selPet.style.display = 'none';
+
+    // Dispara carregamento das observações permanentes da ficha no bloco amarelo
+    if (typeof atualizarObservacoesPetAoSelecionar === 'function') {
+        atualizarObservacoesPetAoSelecionar();
+    }
 
     const infoPet = document.getElementById('infoPetEdicao');
     if (infoPet) {
@@ -1002,6 +1007,11 @@ function abrirModalEditarAgendamento(param) {
     document.getElementById('agendamentoDataHora').value = dados.data_hora;
     document.getElementById('agendamentoStatus').value = dados.status;
     document.getElementById('agendamentoObservacoes').value = dados.observacoes || '';
+
+    // Dispara atualização do preview do agendamento no bloco azul
+    if (typeof atualizarPreviewObservacoes === 'function') {
+        atualizarPreviewObservacoes();
+    }
 
     document.getElementById('btnSalvarAgendamento').textContent = '💾 Salvar Alterações';
     document.getElementById('modalAgendamento').classList.add('active');

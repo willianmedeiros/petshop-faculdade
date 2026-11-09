@@ -65,10 +65,41 @@
                         <input type="datetime-local" name="data_hora" id="agendamentoDataHora" class="form-control" required>
                     </div>
 
-                    <!-- Campo de Observações / Recomendações mantido no PopUp -->
-                    <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label>Observações / Recomendações:</label>
-                        <textarea name="observacoes" id="agendamentoObservacoes" class="form-control" rows="3" placeholder="Ex: Cuidado com os ouvidos, usar shampoo neutro, tosa higiênica, comportamento arisco..."></textarea>
+                    <!-- Campo de Observações / Recomendações Específicas deste Agendamento -->
+                    <div class="form-group" style="margin-bottom: 1.4rem;">
+                        <label style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>📝 Observação / Recomendação para este Atendimento:</span>
+                            <span style="font-size: 0.75rem; color: #2563eb; font-weight: 600;">Específico deste agendamento</span>
+                        </label>
+                        <textarea name="observacoes" id="agendamentoObservacoes" class="form-control" rows="2" 
+                                  placeholder="Digite alguma recomendação específica para hoje (Ex: Cuidado extra na pata esquerda machucada, tosa mais baixa na barriga)..." 
+                                  oninput="atualizarPreviewObservacoes()"></textarea>
+
+                        <!-- Bloco Dual de Observações: Amarelo Clarinho (Ficha Pet) + Azul (Este Agendamento) -->
+                        <div id="containerPreviewObservacoes" class="obs-preview-dual-container" style="margin-top: 0.85rem;">
+                            
+                            <!-- Bloco Amarelo Clarinho (Ficha Permanente do Pet) -->
+                            <div class="obs-box-item obs-box-yellow">
+                                <div class="obs-box-header">
+                                    <span class="obs-box-icon">⭐</span>
+                                    <span>Ficha Permanente do Pet (Cadastro Principal):</span>
+                                </div>
+                                <div id="previewObsPetFicha" class="obs-box-content">
+                                    <span class="obs-empty-text">Selecione um pet acima para carregar as observações da ficha permanente.</span>
+                                </div>
+                            </div>
+
+                            <!-- Bloco Azul (Observação Específica deste Agendamento) -->
+                            <div class="obs-box-item obs-box-blue">
+                                <div class="obs-box-header">
+                                    <span class="obs-box-icon">📌</span>
+                                    <span>Observação Específica deste Agendamento:</span>
+                                </div>
+                                <div id="previewObsAgendamento" class="obs-box-content">
+                                    <span class="obs-empty-text">Nenhuma observação específica inserida para este agendamento.</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="modal-footer" style="padding: 0; border: none;">
@@ -148,18 +179,59 @@
             }
         }
 
+        if (typeof escapeHtml !== 'function') {
+            function escapeHtml(text) {
+                if (!text) return '';
+                return text.toString()
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+        }
+
         function atualizarObservacoesPetAoSelecionar() {
             const selPet = document.getElementById('agendamentoPetId');
+            const previewFicha = document.getElementById('previewObsPetFicha');
             if (!selPet || selPet.selectedIndex < 0) return;
             const opt = selPet.options[selPet.selectedIndex];
-            const obsTextarea = document.getElementById('agendamentoObservacoes');
-            // Só puxa automaticamente se estiver em modo de novo agendamento
-            if (document.getElementById('agendamentoAction').value === 'cadastrar_agendamento') {
-                if (opt && opt.dataset.observacoes !== undefined) {
-                    obsTextarea.value = opt.dataset.observacoes || '';
+
+            if (opt && opt.value) {
+                const obsPet = opt.dataset.observacoes ? opt.dataset.observacoes.trim() : '';
+                if (obsPet) {
+                    const lines = obsPet.split(/\r?\n|;/).map(s => s.trim()).filter(s => s.length > 0);
+                    if (lines.length > 0) {
+                        let html = '<ul style="margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.25rem;">';
+                        lines.forEach(l => {
+                            const clean = l.replace(/^[•\-\*\s]+/, '');
+                            html += `<li>${escapeHtml(clean)}</li>`;
+                        });
+                        html += '</ul>';
+                        if (previewFicha) previewFicha.innerHTML = html;
+                    } else {
+                        if (previewFicha) previewFicha.innerHTML = `<span style="font-weight: 500;">${escapeHtml(obsPet)}</span>`;
+                    }
                 } else {
-                    obsTextarea.value = '';
+                    if (previewFicha) previewFicha.innerHTML = '<span class="obs-empty-text">Nenhuma observação ou recomendação na ficha permanente deste pet.</span>';
                 }
+            } else {
+                if (previewFicha) previewFicha.innerHTML = '<span class="obs-empty-text">Selecione um pet acima para carregar as observações da ficha permanente.</span>';
+            }
+
+            atualizarPreviewObservacoes();
+        }
+
+        function atualizarPreviewObservacoes() {
+            const obsTextarea = document.getElementById('agendamentoObservacoes');
+            const previewAg = document.getElementById('previewObsAgendamento');
+            if (!previewAg) return;
+
+            const val = obsTextarea ? obsTextarea.value.trim() : '';
+            if (val) {
+                previewAg.innerHTML = `<span style="font-weight: 600;">${escapeHtml(val)}</span>`;
+            } else {
+                previewAg.innerHTML = '<span class="obs-empty-text">Nenhuma observação específica inserida para este agendamento.</span>';
             }
         }
 
@@ -182,6 +254,7 @@
 
             document.getElementById('agendamentoStatus').value = 'Agendado';
             document.getElementById('agendamentoObservacoes').value = '';
+            atualizarObservacoesPetAoSelecionar();
 
             const now = new Date();
             now.setDate(now.getDate() + 1);
