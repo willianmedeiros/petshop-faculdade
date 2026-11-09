@@ -1471,10 +1471,36 @@ textarea.form-control {
 
 .kanban-card-btns {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.35rem;
     justify-content: flex-end;
     align-items: center;
     margin-top: 0.3rem;
+    flex-wrap: nowrap;
+}
+
+.kanban-card-btns .btn {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kanban-card-btns .btn-card-delete {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    max-width: 30px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.85rem !important;
+    border-radius: var(--radius-sm) !important;
 }
 
 .kanban-empty {

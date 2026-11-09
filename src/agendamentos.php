@@ -342,11 +342,11 @@ include __DIR__ . '/includes/header.php';
                                     <span class="status-quick-btn-box">
                                         <?php if ($ag['status'] === 'Agendado'): ?>
                                             <button type="button" class="btn btn-warning btn-sm" onclick="mudarStatusAgendamento(<?= $ag['id'] ?>, 'Em Andamento')" title="Iniciar Atendimento">
-                                                ▶ Iniciar
+                                                Iniciar
                                             </button>
                                         <?php elseif ($ag['status'] === 'Em Andamento'): ?>
                                             <button type="button" class="btn btn-success btn-sm" onclick="mudarStatusAgendamento(<?= $ag['id'] ?>, 'Concluído')" title="Concluir Atendimento">
-                                                ✓ Concluir
+                                                Concluir
                                             </button>
                                         <?php endif; ?>
                                     </span>
@@ -357,10 +357,10 @@ include __DIR__ . '/includes/header.php';
                                             style="<?= $podeEditar ? 'display: inline-flex;' : 'display: none;' ?>" 
                                             onclick='abrirModalEditarAgendamento(<?= $jsonAgData ?>)' 
                                             title="Editar agendamento no PopUp do pet <?= htmlspecialchars($ag['pet_nome']) ?>">
-                                        ✏️ Editar
+                                        Editar
                                     </button>
 
-                                    <a href="excluir_agendamento.php?id=<?= $ag['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente excluir este agendamento?');" title="Excluir">
+                                    <a href="excluir_agendamento.php?id=<?= $ag['id'] ?>" class="btn btn-danger btn-sm btn-card-delete" onclick="return confirm('Deseja realmente excluir este agendamento?');" title="Excluir">
                                         🗑️
                                     </a>
                                 </div>
@@ -604,9 +604,9 @@ function moverCardNaInterface(card, agId, statusAntigo, novoStatus, targetList) 
     const quickBox = card.querySelector('.status-quick-btn-box');
     if (quickBox) {
         if (novoStatus === 'Agendado') {
-            quickBox.innerHTML = `<button type="button" class="btn btn-warning btn-sm" onclick="mudarStatusAgendamento(${agId}, 'Em Andamento')" title="Iniciar Atendimento">▶ Iniciar</button>`;
+            quickBox.innerHTML = `<button type="button" class="btn btn-warning btn-sm" onclick="mudarStatusAgendamento(${agId}, 'Em Andamento')" title="Iniciar Atendimento">Iniciar</button>`;
         } else if (novoStatus === 'Em Andamento') {
-            quickBox.innerHTML = `<button type="button" class="btn btn-success btn-sm" onclick="mudarStatusAgendamento(${agId}, 'Concluído')" title="Concluir Atendimento">✓ Concluir</button>`;
+            quickBox.innerHTML = `<button type="button" class="btn btn-success btn-sm" onclick="mudarStatusAgendamento(${agId}, 'Concluído')" title="Concluir Atendimento">Concluir</button>`;
         } else {
             quickBox.innerHTML = '';
         }
