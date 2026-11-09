@@ -1020,12 +1020,12 @@ foreach ($agendamentos as $ag) {
                                         </div>
 
                                         <div class="service-item-footer">
-                                            <div>
+                                            <div class="service-price-box">
                                                 <span class="service-price-label">Valor Padrão</span>
-                                                <div class="service-item-price">R$ <?= number_format($s['preco'], 2, ',', '.') ?></div>
+                                                <div class="service-item-price"><span class="price-currency">R$</span><?= number_format($s['preco'], 2, ',', '.') ?></div>
                                             </div>
 
-                                            <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                            <div style="display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0;">
                                                 <button type="button" class="btn btn-navy btn-sm" onclick="abrirModalNovoAgendamentoComServico(<?= $s['id'] ?>, <?= $s['preco'] ?>, '<?= addslashes($s['nome']) ?>')" title="Agendar este serviço para um pet">
                                                     📅 Agendar
                                                 </button>
