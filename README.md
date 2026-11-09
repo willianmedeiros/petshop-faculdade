@@ -30,8 +30,13 @@ Este projeto é um sistema web moderno para gestão de um PetShop, desenvolvido 
   - **Cards de Métricas no Topo:** Indicadores de Total de Pets, Tutores, Cães e Gatos/Outros.
   - *Vídeo demonstrativo AC2:* [Assistir no Loom](https://www.loom.com/share/260c54e8c8094a90b86042fb952f784f)
 
-- ⏳ **AC3:** 
-  - Sistema de Agendamentos de Serviços (Banho, Tosa, Vacinação, Consultas Veterinárias). *(Em andamento)*
+- ✅ **AC3:** 
+  - **Sistema de Agendamentos de Serviços:** Módulo completo para marcar Banho, Tosa, Vacinação e Consultas Veterinárias associados aos Pets cadastrados.
+  - **Modelagem Relacional de Agendamentos:** Tabela `agendamentos` com chave estrangeira para `pets` e integridade `ON DELETE CASCADE`.
+  - **PopUP Modal de Agendamentos:** Criação e edição interativa de agendamentos com data/hora, valor estimado e recomendações.
+  - **Gestão Ágil de Status:** Transição rápida de status (*Agendado*, *Em Andamento*, *Concluído*, *Cancelado*) e filtros em pílulas com contadores.
+  - **Métricas Financeiras e Operacionais:** Cards de estatísticas com agendamentos pendentes e faturamento de serviços concluídos.
+  - *Vídeo demonstrativo AC3:* *(Em gravação)*
 
 - ⏳ **Prova Final:** 
   - Relatórios analíticos e resumo de faturamento + Diagramas UML (Casos de Uso e Classes). *(Planejado)*
@@ -44,6 +49,7 @@ Este projeto é um sistema web moderno para gestão de um PetShop, desenvolvido 
 - **Board de Tarefas Público (GitHub Projects):** [https://github.com/users/willianmedeiros/projects/1](https://github.com/users/willianmedeiros/projects/1)
 - **Vídeo da Entrega AC1:** [https://www.loom.com/share/493a3cc56a914b8cb72fa84bb153e28b](https://www.loom.com/share/493a3cc56a914b8cb72fa84bb153e28b)
 - **Vídeo da Entrega AC2:** [https://www.loom.com/share/260c54e8c8094a90b86042fb952f784f](https://www.loom.com/share/260c54e8c8094a90b86042fb952f784f)
+- **Vídeo da Entrega AC3:** *(Disponível em breve)*
 
 ---
 
