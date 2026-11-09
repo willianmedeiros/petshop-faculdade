@@ -369,7 +369,7 @@ foreach ($agendamentos as $ag) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetCare - Sistema de Gestão para PetShop</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -982,27 +982,46 @@ foreach ($agendamentos as $ag) {
                             </form>
                         </div>
 
-                        <!-- Catálogo de Serviços Cadastrados -->
+                        <!-- Catálogo de Serviços Cadastrados (Exibição em Cards) -->
                         <div>
-                            <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <span>📋</span> Serviços Disponíveis no Sistema (<?= $total_servicos ?>)
-                            </h3>
-                            <div class="services-catalog-grid">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;">
+                                <div>
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #0f2d4a; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                                        <span>✂️</span> Serviços Disponíveis no Sistema (<?= $total_servicos ?>)
+                                    </h3>
+                                    <p style="font-size: 0.85rem; color: #64748b;">Cartões com preços e tempos de atendimento padrão para agendamento rápido.</p>
+                                </div>
+                                <span class="badge badge-other" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;">
+                                    <?= $total_servicos ?> Serviços Ativos
+                                </span>
+                            </div>
+
+                            <div class="services-catalog-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.4rem;">
                                 <?php foreach ($lista_servicos as $s): ?>
                                     <div class="service-item-card">
-                                        <div>
+                                        <div class="service-card-top">
                                             <div class="service-item-header">
                                                 <div class="service-item-icon"><?= $s['icone'] ?></div>
-                                                <span class="badge badge-other" style="font-size: 0.75rem;">⏱️ <?= $s['duracao_minutos'] ?> min</span>
+                                                <span class="service-duration-badge">⏱️ <?= $s['duracao_minutos'] ?> min</span>
                                             </div>
-                                            <div class="service-item-name"><?= htmlspecialchars($s['nome']) ?></div>
-                                            <div class="service-item-desc"><?= htmlspecialchars($s['descricao'] ?: 'Sem descrição informada.') ?></div>
+                                            <h4 class="service-item-name"><?= htmlspecialchars($s['nome']) ?></h4>
+                                            <p class="service-item-desc"><?= htmlspecialchars($s['descricao'] ?: 'Serviço profissional especializado para cães e gatos.') ?></p>
                                         </div>
+
                                         <div class="service-item-footer">
-                                            <div class="service-item-price">R$ <?= number_format($s['preco'], 2, ',', '.') ?></div>
-                                            <a href="excluir_servico.php?id=<?= $s['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja excluir este serviço do catálogo?');" title="Remover serviço">
-                                                🗑️ Excluir
-                                            </a>
+                                            <div>
+                                                <span class="service-price-label">Valor Padrão</span>
+                                                <div class="service-item-price">R$ <?= number_format($s['preco'], 2, ',', '.') ?></div>
+                                            </div>
+
+                                            <div style="display: flex; gap: 0.4rem; align-items: center;">
+                                                <button type="button" class="btn btn-navy btn-sm" onclick="abrirModalNovoAgendamentoComServico(<?= $s['id'] ?>, <?= $s['preco'] ?>, '<?= addslashes($s['nome']) ?>')" title="Agendar este serviço para um pet">
+                                                    📅 Agendar
+                                                </button>
+                                                <a href="excluir_servico.php?id=<?= $s['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente remover o serviço <?= addslashes($s['nome']) ?> do catálogo?');" title="Excluir este serviço">
+                                                    🗑️
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -1537,6 +1556,15 @@ foreach ($agendamentos as $ag) {
 
             document.getElementById('btnSalvarAgendamento').textContent = '💾 Confirmar Agendamento';
             document.getElementById('modalAgendamento').classList.add('active');
+        }
+
+        function abrirModalNovoAgendamentoComServico(servicoId, servicoPreco, servicoNome) {
+            abrirModalNovoAgendamento();
+            const selServ = document.getElementById('agendamentoServicoId');
+            if (selServ) {
+                selServ.value = servicoId;
+                atualizarPrecoServico();
+            }
         }
 
         function abrirModalEditarAgendamento(dados) {
