@@ -13,8 +13,9 @@ A entrega desta terceira fase (AC3) foca na implementação do **Módulo Complet
    - Criação da tabela `agendamentos` com chaves estrangeiras para `pets` (`ON DELETE CASCADE`) e para `servicos` (`ON DELETE SET NULL`).
    - Atualização completa do script de inicialização do Docker (`mysql/init.sql`).
 
-2. **Área de Catálogo de Serviços & Preços:**
+2. **Área de Catálogo de Serviços & Preços (Cards Responsivos):**
    - Aba e painel dedicado para cadastro de novos serviços com nome, valor (R$), ícone/emoji, duração e descrição.
+   - Exibição do catálogo de serviços em **cards visuais modernos e responsivos**, contendo ícones ilustrativos nativos, tempo estimado de atendimento, valor padrão alinhado em linha única e botões de ação rápida (*📅 Agendar* e *🗑️ Excluir*).
    - Carregamento dinâmico automático dos serviços e seus respectivos valores no momento de realizar um novo agendamento.
 
 3. **Painel de Agendamentos em 4 Colunas (Fluxo Kanban):**
