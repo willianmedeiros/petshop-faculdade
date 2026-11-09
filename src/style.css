@@ -1490,8 +1490,8 @@ textarea.form-control {
    =============================== */
 .services-catalog-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-    gap: 1.5rem !important;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)) !important;
+    gap: 1.35rem !important;
     margin-top: 1.2rem;
 }
 
@@ -1499,7 +1499,7 @@ textarea.form-control {
     background: #ffffff;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
-    padding: 1.5rem;
+    padding: 1.25rem 1.25rem 1.15rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1588,9 +1588,9 @@ textarea.form-control {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 1rem;
+    padding-top: 0.85rem;
     border-top: 1px solid var(--border-light);
-    gap: 0.6rem;
+    gap: 0.5rem;
     flex-wrap: nowrap;
 }
 
@@ -1603,7 +1603,7 @@ textarea.form-control {
 
 .service-price-label {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -1613,20 +1613,57 @@ textarea.form-control {
 }
 
 .service-item-price {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 800;
     color: #047857;
     line-height: 1;
     white-space: nowrap;
     display: inline-flex;
     align-items: baseline;
-    gap: 0.25rem;
+    gap: 0.2rem;
 }
 
 .service-item-price .price-currency {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #059669;
+}
+
+.service-actions-group {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.btn-service-schedule {
+    padding: 0.42rem 0.75rem !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(15, 35, 54, 0.15);
+}
+
+.btn-service-action {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.88rem !important;
+    border-radius: var(--radius-sm) !important;
+    cursor: pointer;
+    line-height: 1 !important;
+    flex-shrink: 0;
 }
 
 /* Toggle de Visualização (Colunas vs Tabela) */

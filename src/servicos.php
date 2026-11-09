@@ -149,7 +149,7 @@ include __DIR__ . '/includes/header.php';
             </span>
         </div>
 
-        <div class="services-catalog-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.4rem;">
+        <div class="services-catalog-grid">
             <?php foreach ($lista_servicos as $s): ?>
                 <div class="service-item-card">
                     <div class="service-card-top">
@@ -167,11 +167,11 @@ include __DIR__ . '/includes/header.php';
                             <div class="service-item-price"><span class="price-currency">R$</span><?= number_format($s['preco'], 2, ',', '.') ?></div>
                         </div>
 
-                        <div style="display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0;">
-                            <button type="button" class="btn btn-navy btn-sm" onclick="abrirModalNovoAgendamentoComServico(<?= $s['id'] ?>, <?= $s['preco'] ?>, '<?= addslashes($s['nome']) ?>')" title="Agendar este serviço para um pet">
-                                📅 Agendar
+                        <div class="service-actions-group">
+                            <button type="button" class="btn btn-navy btn-service-schedule" onclick="abrirModalNovoAgendamentoComServico(<?= $s['id'] ?>, <?= $s['preco'] ?>, '<?= addslashes($s['nome']) ?>')" title="Agendar este serviço">
+                                Agendar
                             </button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick='abrirModalEditarServico(<?= htmlspecialchars(json_encode([
+                            <button type="button" class="btn btn-secondary btn-service-action" onclick='abrirModalEditarServico(<?= htmlspecialchars(json_encode([
                                 "id" => $s["id"],
                                 "nome" => $s["nome"],
                                 "preco" => (float)$s["preco"],
@@ -181,7 +181,7 @@ include __DIR__ . '/includes/header.php';
                             ]), ENT_QUOTES, "UTF-8") ?>)' title="Editar este serviço">
                                 ✏️
                             </button>
-                            <a href="excluir_servico.php?id=<?= $s['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Deseja realmente remover o serviço <?= addslashes($s['nome']) ?> do catálogo?');" title="Excluir este serviço">
+                            <a href="excluir_servico.php?id=<?= $s['id'] ?>" class="btn btn-danger btn-service-action" onclick="return confirm('Deseja realmente remover o serviço <?= addslashes($s['nome']) ?> do catálogo?');" title="Excluir este serviço">
                                 🗑️
                             </a>
                         </div>
@@ -281,3 +281,4 @@ function handleServicoBackdropClick(e) {
 <?php
 include __DIR__ . '/includes/footer.php';
 ?>
+
