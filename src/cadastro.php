@@ -52,7 +52,7 @@ include __DIR__ . '/includes/header.php';
 <!-- ==============================================
      FORMULÁRIO DE NOVO CADASTRO INTEGRADO
      ============================================== -->
-<div class="dashboard-card" style="max-width: 900px; margin: 0 auto;">
+<div class="dashboard-card">
     <div class="dashboard-card-header">
         <div>
             <h2 class="dashboard-card-title">
