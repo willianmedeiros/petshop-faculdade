@@ -48,17 +48,17 @@ $lista_pets_global = $stmt_pets_modal->fetchAll();
 
                 <div class="nav-label" style="margin-top: 1rem;">Gerenciamento</div>
 
+                <!-- Item: Novo Cadastro -->
+                <a href="cadastro.php" class="nav-item <?= $pagina_atual === 'cadastro' ? 'active' : '' ?>">
+                    <span class="icon">✨</span>
+                    <span>Novo Cadastro</span>
+                </a>
+
                 <!-- Item: Pets e Tutores -->
                 <a href="pets.php" class="nav-item <?= $pagina_atual === 'pets' ? 'active' : '' ?>">
                     <span class="icon">🐶</span>
                     <span>Pets e Tutores</span>
                     <span class="nav-badge"><?= $metricas['total_pets'] ?></span>
-                </a>
-
-                <!-- Item: Novo Cadastro -->
-                <a href="cadastro.php" class="nav-item <?= $pagina_atual === 'cadastro' ? 'active' : '' ?>">
-                    <span class="icon">✨</span>
-                    <span>Novo Cadastro</span>
                 </a>
 
                 <div class="nav-label" style="margin-top: 1rem;">Módulos de Atendimento</div>
