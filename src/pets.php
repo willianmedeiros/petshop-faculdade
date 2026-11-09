@@ -130,6 +130,9 @@ include __DIR__ . '/includes/header.php';
             <?php endif; ?>
             <input type="text" name="busca" placeholder="Buscar por pet, tutor ou telefone..." value="<?= htmlspecialchars($busca) ?>">
             <button type="submit" class="btn btn-secondary btn-sm">Filtrar</button>
+            <?php if ($busca !== ''): ?>
+                <a href="pets.php<?= $filtro_especie ? '?especie=' . urlencode($filtro_especie) : '' ?>" class="btn btn-danger-solid btn-sm" title="Limpar busca">Limpar Busca</a>
+            <?php endif; ?>
         </form>
 
         <div class="filter-pills">

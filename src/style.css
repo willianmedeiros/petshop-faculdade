@@ -572,6 +572,26 @@ body {
     background: #fee2e2;
 }
 
+.btn-danger-solid {
+    background: #ef4444;
+    color: #ffffff !important;
+    border: 1px solid #dc2626;
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-danger-solid:hover {
+    background: #dc2626;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+}
+
 .btn-sm {
     padding: 0.4rem 0.8rem;
     font-size: 0.82rem;
@@ -595,7 +615,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     flex: 1;
-    max-width: 400px;
+    max-width: 520px;
 }
 
 .search-box input {

@@ -247,10 +247,10 @@ include __DIR__ . '/includes/header.php';
         <form method="GET" action="agendamentos.php" class="search-box">
             <input type="text" name="busca_ag" placeholder="Buscar por pet, tutor ou serviço..." value="<?= htmlspecialchars($busca_ag) ?>">
             <button type="submit" class="btn btn-secondary btn-sm">Filtrar</button>
+            <?php if ($busca_ag !== ''): ?>
+                <a href="agendamentos.php" class="btn btn-danger-solid btn-sm" title="Limpar filtro e exibir todos os agendamentos">Limpar Busca</a>
+            <?php endif; ?>
         </form>
-        <?php if ($busca_ag !== ''): ?>
-            <a href="agendamentos.php" class="btn btn-secondary btn-sm">Limpar Busca</a>
-        <?php endif; ?>
         <span style="font-size: 0.85rem; color: #64748b;">
             Total: <strong><?= count($agendamentos) ?></strong> agendamentos cadastrados
         </span>
